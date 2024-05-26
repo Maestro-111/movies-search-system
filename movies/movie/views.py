@@ -2,7 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponse,HttpResponseNotFound,HttpResponseRedirect
 from .models import Movie
 from fuzzywuzzy import process
-from .models import Movie
+from .models import Movie,MovieMetaData
+import numpy as np
 
 # Create your views here.
 
@@ -35,7 +36,7 @@ def movie_search(request):
         movies.sort(key=lambda x: x.score, reverse=True)
 
 
-    print(movies)
+    #print(movies)
 
     return render(request, 'movie/search_movie.html', {'movies': movies})
 
@@ -44,6 +45,26 @@ def movie_search(request):
 def show_movie(request, movie_id):
 
     movie = Movie.objects.get(movie_id__exact=movie_id)
+
+    metadata = MovieMetaData.objects.filter(movie_id=movie_id)
+
+    all_metadata = MovieMetaData.objects.exclude(movie_id=movie_id)
+
+    metadata_values = [field.name for field in metadata._meta.get_fields() if field.name != 'movie_id']
+    print(metadata_values)
+    all_metadata_values = [[field.name for field in entry._meta.get_fields() if field.name != 'movie_id'] for entry in all_metadata]
+    print(all_metadata_values)
+
+    '''
+    dot_products = []
+    for movie_id,entry in enumerate(all_metadata_values):
+        dot_products.append([movie_id,np.dot(entry,metadata_values)])
+
+    recomendations = [movie_id for movie_id,dot in sorted(dot_products,key=lambda x : x[1])][:10]
+    
+    print(recomendations)
+    '''
+
 
     context = {
         'movie':movie
