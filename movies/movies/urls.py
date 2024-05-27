@@ -17,9 +17,12 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path,include
+from movie.views import page_not_found
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("menu.urls")),
     path("movies_search/", include("movie.urls"))
 ]
+
+handler404 = page_not_found

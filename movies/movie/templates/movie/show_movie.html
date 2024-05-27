@@ -2,13 +2,45 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>{{ movie.original_title }} - Movie Details</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
 </head>
 <body>
 
-    <h2> Movie </h2>
-    <li><span class="label">Movie Title:</span> {{ movie.original_title }}</li>
-    <li><span class="label">Movie Description:</span> {{ movie.overview }}</li>
+    <header>
+        <h1>Movie Details: </h1>
+    </header>
+
+    <main>
+        <section class="movie-details">
+            <h2><font color="#ff0000">{{ movie.original_title }}</font></h2>
+            <p><strong>Description:</strong> {{ movie.overview }}</p>
+        </section>
+
+        {% if recommendations %}
+            <section class="recommendations">
+                <h2>Recommendation Results:</h2>
+                <ul>
+                    {% for movie in recommendations %}
+                        <li>
+                            <span class="label">Movie Title:</span>
+                            <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a>
+                        </li>
+                        {% if not forloop.last %}
+                            <hr>
+                        {% endif %}
+                    {% empty %}
+                        <li>No recommendations found.</li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+
+        <nav>
+            <p><a href="{% url 'movie_search' %}" class="bold-link">Return to the Movie Search</a></p>
+        </nav>
+    </main>
 
 </body>
 </html>

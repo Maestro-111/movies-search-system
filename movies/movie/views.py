@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render,get_object_or_404
 from django.http import HttpResponse,HttpResponseNotFound,HttpResponseRedirect
 from .models import Movie
 from fuzzywuzzy import process
@@ -6,6 +6,9 @@ from .models import Movie,MovieMetaData
 import numpy as np
 
 # Create your views here.
+
+def page_not_found(request, exception):
+    return HttpResponseNotFound('<h1>Page not found</h1>')
 
 
 def enter_query(request):
@@ -45,29 +48,44 @@ def movie_search(request):
 def show_movie(request, movie_id):
 
     movie = Movie.objects.get(movie_id__exact=movie_id)
+    metadata = MovieMetaData.objects.get(movie_id=movie_id)
 
-    metadata = MovieMetaData.objects.filter(movie_id=movie_id)
+    print(movie)
+    print(metadata)
 
+    metadata_values = np.array([value for key, value in metadata.__dict__.items() if key != 'movie_id' and key != '_state'])
+
+    # Step 2: Retrieve all metadata, excluding the one with the given movie_id
     all_metadata = MovieMetaData.objects.exclude(movie_id=movie_id)
 
-    metadata_values = [field.name for field in metadata._meta.get_fields() if field.name != 'movie_id']
-    print(metadata_values)
-    all_metadata_values = [[field.name for field in entry._meta.get_fields() if field.name != 'movie_id'] for entry in all_metadata]
-    print(all_metadata_values)
-
-    '''
     dot_products = []
-    for movie_id,entry in enumerate(all_metadata_values):
-        dot_products.append([movie_id,np.dot(entry,metadata_values)])
 
-    recomendations = [movie_id for movie_id,dot in sorted(dot_products,key=lambda x : x[1])][:10]
-    
-    print(recomendations)
-    '''
+    for meta in all_metadata:
+        if meta.movie_id != movie.movie_id:
+            meta_values = np.array([value for key, value in meta.__dict__.items() if key != 'movie_id' and key != '_state'])
+            dot_product = np.dot(metadata_values, meta_values)
+            dot_products.append([meta.movie_id, dot_product])
+
+    recommended_ids = [movie_id for (movie_id,dot_product) in sorted(dot_products,key=lambda x : x[1],reverse=True)[:10]]
+
+    recommended_movies = Movie.objects.filter(movie_id__in=recommended_ids).values('original_title')
+
+    recommended_movies = []
+
+    for id in recommended_ids:
+        try:
+            movie_object = Movie.objects.get(movie_id__exact=id)
+            recommended_movies.append(movie_object)
+        except Exception as e:
+            print(e)
+            continue
+
+    print(recommended_movies)
 
 
     context = {
-        'movie':movie
+        'movie':movie,
+        'recommendations':recommended_movies
     }
 
     return render(request,'movie/show_movie.html',context)
