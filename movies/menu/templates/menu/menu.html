@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Main Menu</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <style>
+        h1, h2, h3 {
+            text-align: center;
+        }
+
+        .button-container form {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+   <header>
+       <h1>Welcome to the Menu Page</h1>
+   </header>
+
+   <main>
+       <h3>Search for popular movies within few seconds!</h3>
+
+       <div class="button-container">
+         <form action="{% url 'start_search' %}" method="get">
+           <button type="submit">Start Parsing</button>
+         </form>
+       </div>
+   </main>
+
+</body>
+</html>

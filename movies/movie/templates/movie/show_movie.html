@@ -4,17 +4,17 @@
     <meta charset="UTF-8">
     <title>{{ movie.original_title }} - Movie Details</title>
     {% load static %}
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
 
     <header>
-        <h1>Movie Details: </h1>
+        <h1>Movie Details</h1>
     </header>
 
     <main>
         <section class="movie-details">
-            <h2><font color="#ff0000">{{ movie.original_title }}</font></h2>
+            <h2>{{ movie.original_title }}</h2>
             <p><strong>Description:</strong> {{ movie.overview }}</p>
         </section>
 

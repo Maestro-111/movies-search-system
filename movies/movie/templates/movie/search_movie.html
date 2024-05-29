@@ -12,26 +12,30 @@
     </style>
 </head>
 <body>
-    <h1>Search for a Movie</h1>
-    <form method="GET" action="{% url 'movie_search' %}">
-        <label for="query">Movie Title:</label>
-        <input type="text" id="query" name="query" placeholder="Enter movie title" required>
-        <button type="submit">Search</button>
-    </form>
+    <header>
+        <h1>Search for a Movie</h1>
+    </header>
+    <main>
+        <form method="GET" action="{% url 'movie_search' %}">
+            <label for="query">Movie Title:</label>
+            <input type="text" id="query" name="query" placeholder="Enter movie title" required>
+            <button type="submit">Search</button>
+        </form>
 
-    {% if movies %}
-        <h2>Search Results:</h2>
-        <ul>
-            {% for movie in movies %}
-                <li><span class="label">Movie Title:</span> <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a></li>
-                {% if not forloop.last %}
-                <hr>
-                {% endif %}
-            {% empty %}
-                <li>No movies found.</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-
+        {% if movies %}
+            <h2>Search Results:</h2>
+            <ul>
+                {% for movie in movies %}
+                    <li><span class="label">Movie Title:</span> <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a></li>
+                    {% if not forloop.last %}
+                    <hr>
+                    {% endif %}
+                {% empty %}
+                    <li>No movies found.</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    </main>
 </body>
 </html>
+

@@ -12,6 +12,11 @@ class Movie(models.Model):
     def get_absolute_url(self):
         return reverse('show_movie', kwargs={'movie_id': self.movie_id})
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['original_title'], name='original_title_idx'),
+        ]
+
     def __str__(self):
         return str(self.slug)
 
