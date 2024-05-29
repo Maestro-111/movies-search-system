@@ -1,0 +1,18 @@
+with ids as (
+select movie_id
+from movie_moviemetadata
+where movie_id in (43052, 20986, 605, 30296, 13795)
+)
+
+select m1.movie_id,original_title
+from ids join movie_movie m1 on ids.movie_id = m1.movie_id
+
+
+select *
+from movie_moviemetadata
+where movie_id in (43052)
+
+
+select *
+from movie_movie
+where movie_id in (43052)
