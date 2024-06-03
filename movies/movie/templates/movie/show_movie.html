@@ -13,10 +13,24 @@
     </header>
 
     <main>
+
         <section class="movie-details">
             <h2>{{ movie.original_title }}</h2>
             <p><strong>Description:</strong> {{ movie.overview }}</p>
+            <p><strong>Year:</strong> {{ movie.year }}</p>
+            <p><strong>Tagline:</strong> {{ movie.tagline }}</p>
+            <p><strong>Genres:</strong>
+                {% for genre in genres %}
+                    {{ genre }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
+            <p><strong>Spoken Languages:</strong>
+                {% for language in spoken_languages %}
+                    {{ language }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </p>
         </section>
+
 
         {% if recommendations %}
             <section class="recommendations">

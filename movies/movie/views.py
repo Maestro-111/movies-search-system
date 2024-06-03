@@ -43,7 +43,6 @@ def movie_search(request):
 
 
 
-#@jit
 def recommendations(cur_row_metadata_values, metadata_rows):
 
     """
@@ -69,8 +68,16 @@ def show_movie(request, movie_id):
     movie = Movie.objects.get(movie_id__exact=movie_id)
     metadata = MovieMetaData.objects.get(movie_id=movie_id)
 
+    genres = movie.genres.all()
+    genres_in_movie = genres.values_list('genre', flat=True)
+
+    languages = movie.languages.all()
+    language_in_movie = languages.values_list('language', flat=True)
+
     print(movie)
     print(metadata)
+    print(genres_in_movie)
+    print(language_in_movie)
 
     cur_row_metadata_values = np.array([value for key, value in metadata.__dict__.items() if key != 'movie_id' and key != '_state'])
 
@@ -98,12 +105,14 @@ def show_movie(request, movie_id):
             print(e)
             continue
 
-    print(recommended_movies)
+    #print(recommended_movies)
 
 
     context = {
         'movie':movie,
-        'recommendations':recommended_movies
+        'recommendations':recommended_movies,
+        'spoken_languages':language_in_movie,
+        'genres':genres_in_movie
     }
 
     return render(request,'movie/show_movie.html',context)
