@@ -15,6 +15,8 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+METADATA_PATH = 'C:/movies-search-system/data/movies_metadata.xlsx'
+#  metadata model reads the following file always
 
 
 # Quick-start development settings - unsuitable for production

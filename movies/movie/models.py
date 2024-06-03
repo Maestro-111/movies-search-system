@@ -25,7 +25,7 @@ class Movie(models.Model):
         return str(self.slug)
 
 
-df = pd.read_excel('C:/movies-search-system/data/movies_metadata.xlsx',index_col=0)
+df = pd.read_excel(settings.METADATA_PATH,index_col=0)
 
 def get_django_field_type(dtype):
     if pd.api.types.is_integer_dtype(dtype):
