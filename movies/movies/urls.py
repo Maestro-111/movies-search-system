@@ -24,6 +24,7 @@ urlpatterns = [
     path("", include("menu.urls")),
     path("movies_search/", include("movie.urls")),
     path('users/', include('users.urls')),
+    path('playlist/', include('playlist.urls'))
 ]
 
 handler404 = page_not_found
