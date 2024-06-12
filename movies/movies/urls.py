@@ -22,7 +22,8 @@ from menu.views import page_not_found
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("menu.urls")),
-    path("movies_search/", include("movie.urls"))
+    path("movies_search/", include("movie.urls")),
+    path('users/', include('users.urls')),
 ]
 
 handler404 = page_not_found

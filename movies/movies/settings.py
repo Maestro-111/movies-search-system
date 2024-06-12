@@ -15,7 +15,7 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-METADATA_PATH = 'C:/movies-search-system/data/movies_metadata.xlsx'
+METADATA_PATH = 'C:/movies-search-system/data/movies_metadata_short.xlsx'
 #  metadata model reads the following file always
 
 
@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'movie.apps.MovieConfig',
-    'menu.apps.MenuConfig'
+    'menu.apps.MenuConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -59,7 +60,9 @@ ROOT_URLCONF = 'movies.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates'
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

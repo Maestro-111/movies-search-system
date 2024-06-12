@@ -1,60 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ movie.original_title }} - Movie Details</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-</head>
-<body>
+{% extends 'base.html' %}
 
-    <header>
-        <h1>Movie Details</h1>
-    </header>
+{% block title %}{{ movie.original_title }} - Movie Details{% endblock %}
 
-    <main>
+{% block header %}Movie Details{% endblock %}
 
-        <section class="movie-details">
-            <h2>{{ movie.original_title }}</h2>
-            <p><strong>Description:</strong> {{ movie.overview }}</p>
-            <p><strong>Year:</strong> {{ movie.year }}</p>
-            <p><strong>Tagline:</strong> {{ movie.tagline }}</p>
-            <p><strong>Genres:</strong>
-                {% for genre in genres %}
-                    {{ genre }}{% if not forloop.last %}, {% endif %}
+{% block content %}
+    <section class="movie-details">
+        <h2>{{ movie.original_title }}</h2>
+        <p><strong>Description:</strong> {{ movie.overview }}</p>
+        <p><strong>Year:</strong> {{ movie.year }}</p>
+        <p><strong>Tagline:</strong> {{ movie.tagline }}</p>
+        <p><strong>Genres:</strong>
+            {% for genre in genres %}
+                {{ genre }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        <p><strong>Spoken Languages:</strong>
+            {% for language in spoken_languages %}
+                {{ language }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+    </section>
+
+    {% if recommendations %}
+        <section class="recommendations">
+            <h2>Recommendation Results:</h2>
+            <ul>
+                {% for movie in recommendations %}
+                    <li>
+                        <span class="label">Movie Title:</span>
+                        <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a>
+                    </li>
+                    {% if not forloop.last %}
+                        <hr>
+                    {% endif %}
+                {% empty %}
+                    <li>No recommendations found.</li>
                 {% endfor %}
-            </p>
-            <p><strong>Spoken Languages:</strong>
-                {% for language in spoken_languages %}
-                    {{ language }}{% if not forloop.last %}, {% endif %}
-                {% endfor %}
-            </p>
+            </ul>
         </section>
+    {% endif %}
 
+    <nav>
+        <p><a href="{% url 'movie_search' %}" class="bold-link">Return to the Movie Search</a></p>
+    </nav>
+{% endblock %}
 
-        {% if recommendations %}
-            <section class="recommendations">
-                <h2>Recommendation Results:</h2>
-                <ul>
-                    {% for movie in recommendations %}
-                        <li>
-                            <span class="label">Movie Title:</span>
-                            <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a>
-                        </li>
-                        {% if not forloop.last %}
-                            <hr>
-                        {% endif %}
-                    {% empty %}
-                        <li>No recommendations found.</li>
-                    {% endfor %}
-                </ul>
-            </section>
-        {% endif %}
-
-        <nav>
-            <p><a href="{% url 'movie_search' %}" class="bold-link">Return to the Movie Search</a></p>
-        </nav>
-    </main>
-
-</body>
-</html>

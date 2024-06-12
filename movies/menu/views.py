@@ -17,5 +17,11 @@ def start_search(request):
     return redirect(movie_search_url)
 
 
+
+def user_home(request):
+    return render(request, "menu/user_home.html")
+
+
+
 def page_not_found(request, exception):
     return HttpResponseNotFound("<h1> No such Page!! </h1>")

@@ -1,36 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Main Menu</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <style>
-        h1, h2, h3 {
-            text-align: center;
-        }
+{% extends 'base.html' %}
 
-        .button-container form {
-            text-align: center;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
+{% block title %}Main Menu{% endblock %}
 
-   <header>
-       <h1>Welcome to the Menu Page</h1>
-   </header>
+{% block header %}Welcome to the Menu Page{% endblock %}
 
-   <main>
-       <h3>Search for popular movies within few seconds!</h3>
+{% block content %}
+    <h3>Search for popular movies within a few seconds!</h3>
 
-       <div class="button-container">
-         <form action="{% url 'start_search' %}" method="get">
-           <button type="submit">Start Searching</button>
-         </form>
-       </div>
-   </main>
+    <div class="button-container">
+        <form action="{% url 'start_search' %}" method="get">
+            <button type="submit">Start Searching</button>
+        </form>
+    </div>
 
-</body>
-</html>
+    <div class="button-container">
+        <form action="{% url 'user_home' %}" method="get">
+            <button type="submit">User Home</button>
+        </form>
+    </div>
+{% endblock %}
+

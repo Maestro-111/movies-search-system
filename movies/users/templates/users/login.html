@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log in</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'users/css/styles.css' %}">
+</head>
+<body>
+
+
+
+        <main>
+
+            <header>
+            <h1>Log in</h1>
+        </header>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <p><button type="submit">Submit</button></p>
+        </form>
+
+
+            <nav>
+                <p><a href="{% url 'user_home' %}" class="bold-link">Return to the user home</a></p>
+            </nav>
+
+        </main>
+
+</body>
+</html>
