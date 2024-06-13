@@ -5,6 +5,7 @@
 {% block header %}Search for a Movie{% endblock %}
 
 {% block content %}
+
     <form method="GET" action="{% url 'movie_search' %}">
         <label for="query">Movie Title:</label>
         <input type="text" id="query" name="query" placeholder="Enter movie title" required>

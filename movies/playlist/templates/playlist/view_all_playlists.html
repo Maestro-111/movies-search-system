@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %} View all Playlists {% endblock %}
+
+{% block header %}Playlists{% endblock %}
+
+{% block content %}
+
+    {% if playlists %}
+        <h2>Playlist Results:</h2>
+        <ul>
+            {% for playlist in playlists %}
+                <li><span class="label">Playlist Title:</span> <a href="{{ playlist.get_absolute_url }}">{{ playlist.name }}</a></li>
+                {% if not forloop.last %}
+                <hr>
+                {% endif %}
+            {% empty %}
+                <li>No Playlists found.</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <nav>
+        <p><a href="{% url 'playlist_menu' %}" class="bold-link">Return to the playlist menu</a></p>
+    </nav>
+
+
+{% endblock %}

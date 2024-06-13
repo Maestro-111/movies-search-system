@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %} View all Playlists {% endblock %}
+
+{% block header %}Playlists{% endblock %}
+
+{% block content %}
+
+    {% if movies %}
+        <h2>Movies Results for {{playlist.name}}:</h2>
+        <ul>
+            {% for movie in movies %}
+                <li><span class="label">Movie Title:</span> <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a></li>
+                {% if not forloop.last %}
+                <hr>
+                {% endif %}
+            {% empty %}
+                <li>No Movies found for {{playlist.name}}.</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <nav>
+        <p><a href="{% url 'playlist_menu' %}" class="bold-link">Return to the playlist menu</a></p>
+    </nav>
+
+
+{% endblock %}

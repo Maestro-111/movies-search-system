@@ -44,5 +44,10 @@
     <nav>
         <p><a href="{% url 'movie_search' %}" class="bold-link">Return to the Movie Search</a></p>
     </nav>
+
+    <nav>
+        <p><a href="{% url 'add_movie_to_playlist' movie.movie_id %}" class="bold-link">Add to playlist</a></p>
+    </nav>
+
 {% endblock %}
 

@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Playlist{% endblock %}
+
+{% block header %}Create Playlist{% endblock %}
+
+{% block content %}
+
+    <form method="POST" action="{% url 'create_playlist' %}">
+        {% csrf_token %}
+        <label for="query">Name of Playlist:</label>
+        <input type="text" id="query" name="play_list_name" placeholder="Enter playlist name" required>
+        <button type="submit">Create</button>
+    </form>
+
+    {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+
+    <nav>
+        <p><a href="{% url 'playlist_menu' %}" class="bold-link">Return to the playlist menu</a></p>
+    </nav>
+
+{% endblock %}
