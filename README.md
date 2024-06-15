@@ -11,8 +11,9 @@ Right now database, which is SQLite, contains around 25k movies.
 Currently, set up for this project is not supported
 
 ## TO DO
-1. Add Playlists feature
-2. Add set up instructions and data.
+1. Resolve issue when user does not have playlist and want to add a movie.
+2. Add recommendations for each user based on selected movies in playlists.
+3. Add set up instructions and data.
 
 
 
