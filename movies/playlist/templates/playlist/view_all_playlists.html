@@ -16,7 +16,7 @@
 
                 <form method="POST" action="{% url 'delete_playlist' playlist.id %}" style="margin-left: auto;">
                             {% csrf_token %}
-                            <button type="submit">Remove from playlist</button>
+                            <button type="submit">Remove playlist</button>
                 </form>
                 </li>
                 {% if not forloop.last %}
