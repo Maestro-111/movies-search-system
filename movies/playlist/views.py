@@ -2,6 +2,8 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.http import HttpResponse,HttpResponseNotFound,HttpResponseRedirect
+
+from movie.models import Movie
 from .models import Playlist
 
 # Create your views here.
@@ -56,8 +58,21 @@ def view_playlists(request):
     return render(request, 'playlist/view_all_playlists.html',context)
 
 @login_required
-def delete_playlist(request):
-    return HttpResponse("delete_playlist")
+def delete_playlist(request, playlist_id):
+
+    playlist = get_object_or_404(Playlist, id=playlist_id)
+    playlist.delete()
+
+    return redirect('view_playlists')
+
+
+@login_required
+def remove_movie_from_playlist(request, playlist_id, movie_id):
+
+    playlist = get_object_or_404(Playlist, id=playlist_id, user=request.user)
+    movie = get_object_or_404(Movie, movie_id=movie_id)
+    playlist.movie.remove(movie)
+    return redirect('view_single_playlist', playlist_id=playlist.id)
 
 @login_required
 def view_single_playlist(request, playlist_id:int):
@@ -81,4 +96,31 @@ def view_single_playlist(request, playlist_id:int):
 
 @login_required
 def add_movie_to_playlist(request, movie_id):
-    return HttpResponse(f"We want to add {movie_id} to playlist!")
+
+    movie = get_object_or_404(Movie, movie_id=movie_id)
+
+    if request.method == 'POST':
+
+        play_list_name = request.POST.get('play_list_name')
+        playlist = get_object_or_404(Playlist, name=play_list_name, user=request.user)
+
+
+        if movie in playlist.movie.all():
+
+            error_message = f"The movie '{movie.original_title}' is already in the playlist '{playlist.name}'."
+            playlists = Playlist.objects.filter(user=request.user)
+
+            return render(request, 'playlist/add_movie_to_playlist.html', {
+                'movie_id': movie_id,
+                'playlists': playlists,
+                'movie': movie,
+                'error_message': error_message
+            })
+
+        playlist.movie.add(movie)
+        return redirect('view_single_playlist', playlist_id=playlist.id)
+
+
+    playlists = Playlist.objects.filter(user=request.user)
+
+    return render(request, 'playlist/add_movie_to_playlist.html', {'movie_id': movie_id, 'playlists': playlists, 'movie':movie})

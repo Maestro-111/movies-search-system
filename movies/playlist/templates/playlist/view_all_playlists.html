@@ -10,14 +10,23 @@
         <h2>Playlist Results:</h2>
         <ul>
             {% for playlist in playlists %}
-                <li><span class="label">Playlist Title:</span> <a href="{{ playlist.get_absolute_url }}">{{ playlist.name }}</a></li>
+                <li style="display: flex; align-items: center;">
+                    <span class="label">Playlist Title:</span>
+                    <a href="{{ playlist.get_absolute_url }}">{{ playlist.name }}</a>
+
+                <form method="POST" action="{% url 'delete_playlist' playlist.id %}" style="margin-left: auto;">
+                            {% csrf_token %}
+                            <button type="submit">Remove from playlist</button>
+                </form>
+                </li>
                 {% if not forloop.last %}
                 <hr>
                 {% endif %}
             {% empty %}
-                <li>No Playlists found.</li>
             {% endfor %}
         </ul>
+    {% else %}
+        <p>You have no Playlists.</p>
     {% endif %}
 
     <nav>

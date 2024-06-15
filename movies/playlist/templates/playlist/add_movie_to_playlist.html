@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Add {{movie.original_title}} to Playlist{% endblock %}
+
+{% block header %}Add {{movie.original_title}} to Playlist{% endblock %}
+
+{% block content %}
+
+    {% if playlists %}
+        <section class="recommendations">
+            <h2>Your Playlists:</h2>
+            <ul>
+                {% for playlist in playlists %}
+                    <li>
+                        <span class="label">playlist name: {{ playlist.name }}</span>
+                    </li>
+                    {% if not forloop.last %}
+                        <hr>
+                    {% endif %}
+                {% empty %}
+                    <li>No playlist found.</li>
+                {% endfor %}
+            </ul>
+
+    {% endif %}
+
+            {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+
+    <form method="POST" action="{% url 'add_movie_to_playlist' movie_id %}">
+        {% csrf_token %}
+        <label for="query">Name of Playlist:</label>
+        <input type="text" id="query" name="play_list_name" placeholder="Enter playlist name" required>
+        <button type="submit">Add</button>
+    </form>
+
+
+        </section>
+
+    <nav>
+        <p><a href="{% url 'playlist_menu' %}" class="bold-link">Return to the playlist menu</a></p>
+    </nav>
+{% endblock %}

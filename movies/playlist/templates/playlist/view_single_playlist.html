@@ -10,19 +10,25 @@
         <h2>Movies Results for {{playlist.name}}:</h2>
         <ul>
             {% for movie in movies %}
-                <li><span class="label">Movie Title:</span> <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a></li>
+                <li style="display: flex; align-items: center;">
+                    <span class="label">Movie Title:</span>
+                    <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a>
+                    <form method="POST" action="{% url 'remove_movie_from_playlist' playlist.id movie.movie_id %}" style="margin-left: auto;">
+                        {% csrf_token %}
+                        <button type="submit">Remove from playlist</button>
+                    </form>
+                </li>
                 {% if not forloop.last %}
                 <hr>
                 {% endif %}
-            {% empty %}
-                <li>No Movies found for {{playlist.name}}.</li>
             {% endfor %}
         </ul>
+    {% else %}
+        <p>No Movies found for {{playlist.name}}.</p>
     {% endif %}
 
     <nav>
-        <p><a href="{% url 'playlist_menu' %}" class="bold-link">Return to the playlist menu</a></p>
+        <p><a href="{% url 'view_playlists' %}" class="bold-link">Return to the your playlists</a></p>
     </nav>
-
 
 {% endblock %}
