@@ -22,11 +22,11 @@
         </p>
     </section>
 
-    {% if recommendations %}
-        <section class="recommendations">
+    {% if produce_recommendations %}
+        <section class="produce_recommendations">
             <h2>Recommendation Results:</h2>
             <ul>
-                {% for movie in recommendations %}
+                {% for movie in produce_recommendations %}
                     <li>
                         <span class="label">Movie Title:</span>
                         <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a>
@@ -35,7 +35,7 @@
                         <hr>
                     {% endif %}
                 {% empty %}
-                    <li>No recommendations found.</li>
+                    <li>No produce_recommendations found.</li>
                 {% endfor %}
             </ul>
         </section>

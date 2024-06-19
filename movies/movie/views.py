@@ -5,6 +5,7 @@ from fuzzywuzzy import process
 from .models import Movie,MovieMetaData
 import numpy as np
 from numba import jit
+from recommendations import produce_recommendations
 
 # Create your views here.
 
@@ -42,27 +43,6 @@ def movie_search(request):
     return render(request, 'movie/search_movie.html', {'movies': movies})
 
 
-
-def recommendations(cur_row_metadata_values, metadata_rows):
-
-    """
-    busines logic
-
-    """
-
-    dot_products = []
-
-    for meta_id, meta_row in metadata_rows:
-        dot_product = np.dot(cur_row_metadata_values, meta_row)
-        dot_products.append([meta_id, dot_product])
-
-    recommended_ids = [movie_id for (movie_id, dot_product) in
-                       sorted(dot_products, key=lambda x: x[1], reverse=True)[:10]]
-
-    return recommended_ids
-
-
-
 def show_movie(request, movie_id):
 
     movie = Movie.objects.get(movie_id__exact=movie_id)
@@ -93,7 +73,7 @@ def show_movie(request, movie_id):
             meta_values = np.array([value for key, value in meta.__dict__.items() if key != 'movie_id' and key != '_state'])
             metadata_rows.append([meta.movie_id,meta_values])
 
-    recommended_ids = recommendations(cur_row_metadata_values, metadata_rows)
+    recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows)
 
     recommended_movies = []
 
@@ -110,7 +90,7 @@ def show_movie(request, movie_id):
 
     context = {
         'movie':movie,
-        'recommendations':recommended_movies,
+        'produce_recommendations':recommended_movies,
         'spoken_languages':language_in_movie,
         'genres':genres_in_movie
     }

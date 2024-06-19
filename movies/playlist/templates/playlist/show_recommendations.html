@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}My recommendations{% endblock %}
+
+{% block header %}My recommendations{% endblock %}
+
+{% block content %}
+
+    {% if error_message %}
+        <p style="color: red;">{{ error_message }}</p>
+    {% endif %}
+
+    {% if result %}
+        <section class="result">
+            <h2>Recommendation Results:</h2>
+            <ul>
+                {% for movie in result %}
+                    <li>
+                        <span class="label">Movie Title:</span>
+                        <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a>
+                    </li>
+                    {% if not forloop.last %}
+                        <hr>
+                    {% endif %}
+                {% empty %}
+                    <li>No produce_recommendations found.</li>
+                {% endfor %}
+            </ul>
+        </section>
+    {% endif %}
+
+
+    <nav>
+        <p><a href="{% url 'playlist_menu' %}" class="bold-link">Return to the playlist menu</a></p>
+    </nav>
+
+
+{% endblock %}
