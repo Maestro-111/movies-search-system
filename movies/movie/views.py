@@ -5,7 +5,13 @@ from fuzzywuzzy import process
 from .models import Movie,MovieMetaData
 import numpy as np
 from numba import jit
+
 from recommendations import produce_recommendations
+from recommendations import get_text_vectors
+
+from django.conf import settings
+
+from gensim.models import Word2Vec
 
 # Create your views here.
 
@@ -48,29 +54,39 @@ def show_movie(request, movie_id):
     movie = Movie.objects.get(movie_id__exact=movie_id)
     metadata = MovieMetaData.objects.get(movie_id=movie_id)
 
+    model = Word2Vec.load(settings.MODEL_DIR)
+
     genres = movie.genres.all()
     genres_in_movie = genres.values_list('genre', flat=True)
 
     languages = movie.languages.all()
     language_in_movie = languages.values_list('language', flat=True)
 
+    text_features = get_text_vectors(movie.overview,model)
+
     print(movie)
+    print(text_features)
     print(metadata)
     print(genres_in_movie)
     print(language_in_movie)
 
     cur_row_metadata_values = np.array([value for key, value in metadata.__dict__.items() if key != 'movie_id' and key != '_state'])
+    cur_row_metadata_values = np.concatenate([cur_row_metadata_values, text_features])
 
     # Step 2: Retrieve all metadata, excluding the one with the given movie_id
     all_metadata = MovieMetaData.objects.exclude(movie_id=movie_id)
 
-
     metadata_rows = []
-
 
     for meta in all_metadata:
         if meta.movie_id != movie.movie_id:
+
+            meta_movie = Movie.objects.get(movie_id__exact=meta.movie_id)
+            text_features = get_text_vectors(meta_movie.overview, model)
+
             meta_values = np.array([value for key, value in meta.__dict__.items() if key != 'movie_id' and key != '_state'])
+            meta_values = np.concatenate([meta_values,text_features])
+
             metadata_rows.append([meta.movie_id,meta_values])
 
     recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows)

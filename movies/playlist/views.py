@@ -190,8 +190,10 @@ def get_my_recommendations(request):
 
         for meta in all_metadata:
             if meta.movie_id != movie.movie_id:
+
                 meta_values = np.array(
                     [value for key, value in meta.__dict__.items() if key != 'movie_id' and key != '_state'])
+
                 metadata_rows.append([meta.movie_id, meta_values])
 
         recommended_movies = [Movie.objects.get(movie_id__exact=id) for id in produce_recommendations(cur_row_metadata_values, metadata_rows)]
