@@ -15,6 +15,8 @@ from recommendations import get_text_vectors
 
 from gensim.models import Word2Vec
 
+import joblib
+
 import random
 
 # Create your views here.
@@ -156,6 +158,8 @@ def add_movie_to_playlist(request, movie_id):
 def get_my_recommendations(request):
 
     model = Word2Vec.load(settings.MODEL_DIR)
+    pca = joblib.load(settings.PCA_DIR)
+
     playlists = Playlist.objects.filter(user=request.user)
 
     if not playlists.exists():
@@ -187,10 +191,10 @@ def get_my_recommendations(request):
         metadata = MovieMetaData.objects.get(movie_id=movie.movie_id)
         text_features = get_text_vectors(movie.overview, model)
 
-        cur_row_metadata_values = np.array(
-            [value for key, value in metadata.__dict__.items() if key in set(settings.FEATURES)])
-        cur_row_metadata_values = np.concatenate([cur_row_metadata_values, text_features])
+        cur_row_metadata_values = np.array([value for key, value in metadata.__dict__.items() if key in set(settings.FEATURES)])
+        cur_row_metadata_values = pca.transform(cur_row_metadata_values.reshape(1, -1)).reshape(-1)
 
+        cur_row_metadata_values = np.concatenate([cur_row_metadata_values, text_features])
         all_metadata = MovieMetaData.objects.exclude(movie_id=movie.movie_id)
 
         metadata_rows = []
@@ -202,10 +206,10 @@ def get_my_recommendations(request):
                 meta_movie = Movie.objects.get(movie_id__exact=meta.movie_id)
                 text_features = get_text_vectors(meta_movie.overview, model)
 
-                meta_values = np.array(
-                    [value for key, value in meta.__dict__.items() if key in set(settings.FEATURES)])
-                meta_values = np.concatenate([meta_values, text_features])
+                meta_values = np.array([value for key, value in meta.__dict__.items() if key in set(settings.FEATURES)])
+                meta_values = pca.transform(meta_values.reshape(1, -1)).reshape(-1)
 
+                meta_values = np.concatenate([meta_values, text_features])
                 metadata_rows.append([meta.movie_id, meta_values])
 
         recommended_movies = [Movie.objects.get(movie_id__exact=id) for id in produce_recommendations(cur_row_metadata_values, metadata_rows)]

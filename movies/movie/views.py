@@ -13,10 +13,22 @@ from django.conf import settings
 
 from gensim.models import Word2Vec
 
+import joblib
+
+import warnings
+
+# Ignore all warnings
+warnings.filterwarnings('ignore')
+
 # Create your views here.
 
 
 def enter_query(request):
+
+    """
+    display search menu
+    """
+
     return render(request,'movie/search_movie.html')
 
 
@@ -55,6 +67,7 @@ def show_movie(request, movie_id):
     metadata = MovieMetaData.objects.get(movie_id=movie_id)
 
     model = Word2Vec.load(settings.MODEL_DIR)
+    pca = joblib.load(settings.PCA_DIR)
 
     genres = movie.genres.all()
     genres_in_movie = genres.values_list('genre', flat=True)
@@ -70,10 +83,10 @@ def show_movie(request, movie_id):
     print(genres_in_movie)
     print(language_in_movie)
 
-    cur_row_metadata_values = np.array([value for key, value in metadata.__dict__.items() if key in set(settings.FEATURES) ])
-    cur_row_metadata_values = np.concatenate([cur_row_metadata_values, text_features])
+    cur_row_metadata_values = np.array([value for key, value in metadata.__dict__.items() if key in set(settings.FEATURES)])
+    cur_row_metadata_values = pca.transform(cur_row_metadata_values.reshape(1, -1)).reshape(-1)
 
-    # Step 2: Retrieve all metadata, excluding the one with the given movie_id
+    cur_row_metadata_values = np.concatenate([cur_row_metadata_values, text_features])
     all_metadata = MovieMetaData.objects.exclude(movie_id=movie_id)
 
     metadata_rows = []
@@ -85,8 +98,9 @@ def show_movie(request, movie_id):
             text_features = get_text_vectors(meta_movie.overview, model)
 
             meta_values = np.array([value for key, value in meta.__dict__.items() if key in set(settings.FEATURES)])
-            meta_values = np.concatenate([meta_values,text_features])
+            meta_values = pca.transform(meta_values.reshape(1, -1)).reshape(-1)
 
+            meta_values = np.concatenate([meta_values,text_features])
             metadata_rows.append([meta.movie_id,meta_values])
 
     recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows)

@@ -18,6 +18,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 MODEL_DIR = "C:/movies-search-system/word2vec.model"
+PCA_DIR = "C:/movies-search-system/pca_model.pkl"
+
 GENERAL = ["budget", "popularity", "year", "revenue", "runtime", "vote_average"]
 
 GENRES = ['Foreign', 'Telescene Film Group Productions', 'Aniplex', 'Music', 'Comedy', 'Animation', 'Action', 'TV Movie', 'Sentai Filmworks',

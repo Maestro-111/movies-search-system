@@ -1,7 +1,7 @@
 import numpy as np
 from nltk.tokenize import word_tokenize
 
-def produce_recommendations(cur_row_metadata_values, metadata_rows):
+def produce_recommendations_1(cur_row_metadata_values, metadata_rows):
 
     """
     compute predictions ( dot products) for each cur_row_metadata_values and metadata_rows pair.
@@ -18,6 +18,28 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows):
                        sorted(dot_products, key=lambda x: x[1], reverse=True)[:10]]
 
     return recommended_ids
+
+
+def produce_recommendations(cur_row_metadata_values, metadata_rows):
+
+    """
+    compute predictions ( dot products) for each cur_row_metadata_values and metadata_rows pair.
+
+    """
+
+    meta_ids, meta_matrix = zip(*metadata_rows)
+    meta_matrix = np.array(meta_matrix)
+
+    dot_products = np.dot(meta_matrix, cur_row_metadata_values)
+
+    meta_ids = np.array(meta_ids)
+    combined = np.vstack((meta_ids, dot_products)).T
+
+    sorted_indices = np.argsort(-combined[:, 1])
+    recommended_ids = combined[sorted_indices[:10], 0].astype(int)
+
+    return recommended_ids.tolist()
+
 
 
 def get_average_word_vector(tokens, model):
