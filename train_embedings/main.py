@@ -29,7 +29,7 @@ def prepare_text_corpus():
 
 def train_save_Word2Vec(corpus):
 
-    model = Word2Vec(sentences=corpus, vector_size=200, window=10, min_count=1, workers=4)
+    model = Word2Vec(sentences=corpus, vector_size=5, window=5, min_count=20, workers=4)
     model.save(model_path)
 
 
@@ -55,6 +55,6 @@ def pipeline(train_save=False, test=False):
 
 
 if __name__ == '__main__':
-    pipeline(train_save=False,test=True)
+    pipeline(train_save=True,test=False)
 
 

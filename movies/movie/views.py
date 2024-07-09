@@ -70,7 +70,7 @@ def show_movie(request, movie_id):
     print(genres_in_movie)
     print(language_in_movie)
 
-    cur_row_metadata_values = np.array([value for key, value in metadata.__dict__.items() if key != 'movie_id' and key != '_state'])
+    cur_row_metadata_values = np.array([value for key, value in metadata.__dict__.items() if key in set(settings.FEATURES) ])
     cur_row_metadata_values = np.concatenate([cur_row_metadata_values, text_features])
 
     # Step 2: Retrieve all metadata, excluding the one with the given movie_id
@@ -84,13 +84,12 @@ def show_movie(request, movie_id):
             meta_movie = Movie.objects.get(movie_id__exact=meta.movie_id)
             text_features = get_text_vectors(meta_movie.overview, model)
 
-            meta_values = np.array([value for key, value in meta.__dict__.items() if key != 'movie_id' and key != '_state'])
+            meta_values = np.array([value for key, value in meta.__dict__.items() if key in set(settings.FEATURES)])
             meta_values = np.concatenate([meta_values,text_features])
 
             metadata_rows.append([meta.movie_id,meta_values])
 
     recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows)
-
     recommended_movies = []
 
     for id in recommended_ids:
@@ -100,9 +99,6 @@ def show_movie(request, movie_id):
         except Exception as e:
             print(e)
             continue
-
-    #print(recommended_movies)
-
 
     context = {
         'movie':movie,

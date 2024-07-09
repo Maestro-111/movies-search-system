@@ -4,7 +4,7 @@ from nltk.tokenize import word_tokenize
 def produce_recommendations(cur_row_metadata_values, metadata_rows):
 
     """
-    busines logic
+    compute predictions ( dot products) for each cur_row_metadata_values and metadata_rows pair.
 
     """
 

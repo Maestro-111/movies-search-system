@@ -8,7 +8,13 @@ from .models import Playlist
 
 import numpy as np
 
+from django.conf import settings
+
 from recommendations import produce_recommendations
+from recommendations import get_text_vectors
+
+from gensim.models import Word2Vec
+
 import random
 
 # Create your views here.
@@ -149,6 +155,7 @@ def add_movie_to_playlist(request, movie_id):
 @login_required
 def get_my_recommendations(request):
 
+    model = Word2Vec.load(settings.MODEL_DIR)
     playlists = Playlist.objects.filter(user=request.user)
 
     if not playlists.exists():
@@ -177,22 +184,27 @@ def get_my_recommendations(request):
 
     for movie in selected_movies:
 
-        print(movie)
-
         metadata = MovieMetaData.objects.get(movie_id=movie.movie_id)
+        text_features = get_text_vectors(movie.overview, model)
 
         cur_row_metadata_values = np.array(
-            [value for key, value in metadata.__dict__.items() if key != 'movie_id' and key != '_state'])
+            [value for key, value in metadata.__dict__.items() if key in set(settings.FEATURES)])
+        cur_row_metadata_values = np.concatenate([cur_row_metadata_values, text_features])
 
         all_metadata = MovieMetaData.objects.exclude(movie_id=movie.movie_id)
 
         metadata_rows = []
 
         for meta in all_metadata:
+
             if meta.movie_id != movie.movie_id:
 
+                meta_movie = Movie.objects.get(movie_id__exact=meta.movie_id)
+                text_features = get_text_vectors(meta_movie.overview, model)
+
                 meta_values = np.array(
-                    [value for key, value in meta.__dict__.items() if key != 'movie_id' and key != '_state'])
+                    [value for key, value in meta.__dict__.items() if key in set(settings.FEATURES)])
+                meta_values = np.concatenate([meta_values, text_features])
 
                 metadata_rows.append([meta.movie_id, meta_values])
 
@@ -207,7 +219,6 @@ def get_my_recommendations(request):
                 result.add(movie)
 
     result = list(result)
-
 
     return render(request, 'playlist/show_recommendations.html', {'result':result})
 
