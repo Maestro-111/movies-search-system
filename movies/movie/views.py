@@ -8,6 +8,7 @@ from numba import jit
 
 from recommendations import produce_recommendations
 from recommendations import get_text_vectors
+from recommendations import get_combined_features
 
 from django.conf import settings
 
@@ -66,7 +67,7 @@ def show_movie(request, movie_id):
     movie = Movie.objects.get(movie_id__exact=movie_id)
     metadata = MovieMetaData.objects.get(movie_id=movie_id)
 
-    model = Word2Vec.load(settings.MODEL_DIR)
+    wordvec = Word2Vec.load(settings.MODEL_DIR)
     pca = joblib.load(settings.PCA_DIR)
 
     genres = movie.genres.all()
@@ -75,41 +76,27 @@ def show_movie(request, movie_id):
     languages = movie.languages.all()
     language_in_movie = languages.values_list('language', flat=True)
 
-    text_features = get_text_vectors(movie.overview,model)
-
     print(movie)
-    print(text_features)
     print(metadata)
     print(genres_in_movie)
     print(language_in_movie)
 
-    cur_row_metadata_values = np.array([value for key, value in metadata.__dict__.items() if key in set(settings.FEATURES)])
-    cur_row_metadata_values = pca.transform(cur_row_metadata_values.reshape(1, -1)).reshape(-1)
+    all_metadata = list(MovieMetaData.objects.all().select_related('movie'))
+    all_metadata_dict = {meta.movie_id: meta for meta in all_metadata}
 
-    cur_row_metadata_values = np.concatenate([cur_row_metadata_values, text_features])
-    all_metadata = MovieMetaData.objects.exclude(movie_id=movie_id)
+    cur_row_metadata_values = get_combined_features(all_metadata_dict.get(movie.movie_id), movie.overview, wordvec)
 
-    metadata_rows = []
-
-    for meta in all_metadata:
-        if meta.movie_id != movie.movie_id:
-
-            meta_movie = Movie.objects.get(movie_id__exact=meta.movie_id)
-            text_features = get_text_vectors(meta_movie.overview, model)
-
-            meta_values = np.array([value for key, value in meta.__dict__.items() if key in set(settings.FEATURES)])
-            meta_values = pca.transform(meta_values.reshape(1, -1)).reshape(-1)
-
-            meta_values = np.concatenate([meta_values,text_features])
-            metadata_rows.append([meta.movie_id,meta_values])
+    metadata_rows = [
+        (meta.movie_id, get_combined_features(meta, all_metadata_dict[meta.movie_id].movie.overview, wordvec))
+        for meta in all_metadata if meta.movie_id != movie.movie_id
+    ]
 
     recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows)
     recommended_movies = []
 
     for id in recommended_ids:
         try:
-            movie_object = Movie.objects.get(movie_id__exact=id)
-            recommended_movies.append(movie_object)
+            recommended_movies.append(Movie.objects.get(movie_id__exact=id))
         except Exception as e:
             print(e)
             continue
