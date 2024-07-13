@@ -53,6 +53,8 @@ python manage.py migrate
 4) Finally, we populate the database. Run the scripts in populate_database in the following order:
 
 ```
+deactivate
+cd ..
 cd populate_database
 venv\Scripts\activate
 
