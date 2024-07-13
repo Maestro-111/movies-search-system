@@ -1,19 +1,29 @@
 {% extends 'base.html' %}
 
-{% block title %} View all Playlists {% endblock %}
+{% block title %} View Playlist {% endblock %}
 
 {% block header %}Playlists{% endblock %}
 
 {% block content %}
+    <h2>{{ playlist.name }}</h2>
+
+    <form method="POST" action="" style="display: flex; align-items: center;">
+        {% csrf_token %}
+        <div style="display: flex; align-items: center;">
+            <label for="id_name" style="margin-right: 10px;">Name:</label>
+            {{ form.name }}
+            <button type="submit" style="margin-left: 10px;">Change Name</button>
+        </div>
+    </form>
 
     {% if movies %}
-        <h2>Movies Results for {{playlist.name}}:</h2>
+        <h2>Movies in {{ playlist.name }}:</h2>
         <ul>
             {% for movie in movies %}
                 <li style="display: flex; align-items: center;">
                     <span class="label">Movie Title:</span>
-                    <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a>
-                    <form method="POST" action="{% url 'remove_movie_from_playlist' playlist.id movie.movie_id %}" style="margin-left: auto;">
+                    <a href="{{ movie.get_absolute_url }}" style="margin-right: auto;">{{ movie.original_title }}</a>
+                    <form method="POST" action="{% url 'remove_movie_from_playlist' playlist.id movie.movie_id %}">
                         {% csrf_token %}
                         <button type="submit">Remove from playlist</button>
                     </form>
@@ -24,11 +34,11 @@
             {% endfor %}
         </ul>
     {% else %}
-        <p>No Movies found for {{playlist.name}}.</p>
+        <p>No Movies found for {{ playlist.name }}.</p>
     {% endif %}
 
     <nav>
-        <p><a href="{% url 'view_playlists' %}" class="bold-link">Return to the your playlists</a></p>
+        <p><a href="{% url 'view_playlists' %}" class="bold-link">Return to your playlists</a></p>
     </nav>
 
 {% endblock %}

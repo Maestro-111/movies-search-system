@@ -4,7 +4,9 @@ from django.urls import reverse
 from django.http import HttpResponse,HttpResponseNotFound,HttpResponseRedirect
 
 from movie.models import Movie, MovieMetaData
+
 from .models import Playlist
+from .forms import PlaylistForm
 
 import numpy as np
 
@@ -95,16 +97,24 @@ def remove_movie_from_playlist(request, playlist_id, movie_id):
 def view_single_playlist(request, playlist_id:int):
 
 
-
     playlist = get_object_or_404(Playlist, id=playlist_id)
     movies = playlist.movie.all()
 
+    if request.method == 'POST':
+        form = PlaylistForm(request.POST, instance=playlist)
+        if form.is_valid():
+            form.save()
+            return redirect('view_single_playlist', playlist_id=playlist.id)
+    else:
+        form = PlaylistForm(instance=playlist)
+
     context = {
-        "movies":movies,
-        "playlist":playlist
+        "movies": movies,
+        "playlist": playlist,
+        "form": form,
     }
 
-    return render(request, 'playlist/view_single_playlist.html',context)
+    return render(request, 'playlist/view_single_playlist.html', context)
 
 
 
@@ -157,6 +167,7 @@ def add_movie_to_playlist(request, movie_id):
 
 @login_required
 def get_my_recommendations(request):
+
     wordvec = Word2Vec.load(settings.MODEL_DIR)
     pca = joblib.load(settings.PCA_DIR)
 
