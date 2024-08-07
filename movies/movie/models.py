@@ -2,6 +2,7 @@ from django.db import models
 from django.urls import reverse
 import pandas as pd
 from django.conf import settings
+from django.contrib.auth.models import User
 
 class Movie(models.Model):
     movie_id = models.IntegerField(primary_key=True)
@@ -12,6 +13,7 @@ class Movie(models.Model):
     year = models.IntegerField(blank=True,null=True)
     genres = models.ManyToManyField("MovieGenres",blank=True,related_name='genres')
     languages = models.ManyToManyField("MovieLanguages",blank=True,related_name='languages')
+    ratings = models.ManyToManyField(User, through='Rating', related_name='rated_movies')
 
     def get_absolute_url(self):
         return reverse('show_movie', kwargs={'movie_id': self.movie_id})
@@ -23,6 +25,18 @@ class Movie(models.Model):
 
     def __str__(self):
         return str(self.slug)
+
+
+class Rating(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField()
+
+    class Meta:
+        unique_together = ('user', 'movie')
+
+    def __str__(self):
+        return f'{self.user.username} - {self.movie.original_title}: {self.rating}'
 
 
 df = pd.read_excel(settings.METADATA_PATH,index_col=0)

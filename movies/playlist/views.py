@@ -2,11 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.http import HttpResponse,HttpResponseNotFound,HttpResponseRedirect
-
-from movie.models import Movie, MovieMetaData
-
+from django.db import IntegrityError
+from movie.models import Movie, MovieMetaData, Rating
 from .models import Playlist
-from .forms import PlaylistForm
+from .forms import PlaylistForm, RatingForm
 
 import numpy as np
 
@@ -91,16 +90,28 @@ def remove_movie_from_playlist(request, playlist_id, movie_id):
 
     playlist.movie.remove(movie)
 
+    try:
+        rating = Rating.objects.get(movie=movie, user=request.user)
+        # Delete the rating if it exists
+        rating.delete()
+    except Rating.DoesNotExist:
+        # Rating does not exist; nothing to delete
+        pass
+
     return redirect('view_single_playlist', playlist_id=playlist.id)
+
+@login_required
+def give_movie_rating(requst):
+    pass
 
 @login_required
 def view_single_playlist(request, playlist_id:int):
 
-
     playlist = get_object_or_404(Playlist, id=playlist_id)
     movies = playlist.movie.all()
 
-    if request.method == 'POST':
+    if request.method == 'POST' and 'name' in request.POST:
+
         form = PlaylistForm(request.POST, instance=playlist)
         if form.is_valid():
             form.save()
@@ -108,10 +119,51 @@ def view_single_playlist(request, playlist_id:int):
     else:
         form = PlaylistForm(instance=playlist)
 
+    # Handle rating submission
+    if request.method == 'POST' and 'rating' in request.POST:
+        movie_id = request.POST.get('movie_id')
+        movie = get_object_or_404(Movie, movie_id=movie_id)
+        rating_form = RatingForm(request.POST)
+
+        if rating_form.is_valid():
+
+            rating = rating_form.save(commit=False)
+            rating.user = request.user
+            rating.movie = movie
+
+            existing_rating = Rating.objects.filter(user=request.user, movie=movie).first()
+
+            if existing_rating:
+                # Update the existing rating
+                existing_rating.rating = rating.rating
+                existing_rating.save()
+            else:
+                # Save the new rating
+                try:
+                    rating.save()
+                except IntegrityError:
+                    # Handle the case where the rating could not be saved
+                    # This block might be redundant with the above check,
+                    # but it's a good practice to include it for safety.
+                    pass
+
+            return redirect('view_single_playlist', playlist_id=playlist.id)
+    else:
+        rating_form = RatingForm()
+
+    movie_ratings = {movie.movie_id: Rating.objects.filter(movie=movie).first() for movie in movies}
+
+    movie_ratings_display = {
+        movie.movie_id: (rating.rating if rating else None)
+        for movie, rating in zip(movies, [Rating.objects.filter(movie=movie).first() for movie in movies])
+    }
+
     context = {
         "movies": movies,
         "playlist": playlist,
         "form": form,
+        "rating_form": rating_form,
+        "movie_ratings_display": movie_ratings_display
     }
 
     return render(request, 'playlist/view_single_playlist.html', context)

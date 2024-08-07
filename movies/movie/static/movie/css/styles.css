@@ -118,3 +118,10 @@ nav a:hover {
     font-weight: bold;
     color: #007BFF;
 }
+
+.button-container {
+    display: flex;
+    gap: 10px; /* Adjust spacing between buttons if needed */
+}
+
+
