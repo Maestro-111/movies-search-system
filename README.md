@@ -19,16 +19,16 @@ SQLite is used to store it.
 
 ## Methodology
 
-1. Our recommendation system is content based - it makes predictions based only on movies you selected.
-2. As a baseline we are using dot product similarity. Each movie has its own numeric representation (vector) which is stored in SQLite.
+1. Our recommendation system is content based - it makes predictions based only on the movies you selected.
+2. As a baseline we are using cosine similarity. Each movie has its own numeric representation (vector) which is stored in SQLite.
 3. We are reducing dim of movie numeric representation with PCA. 
-4. Also, we are producing additional text features for our model with Word2Vec. train_embedding is module to train Word2Vec on current movies' data.
+4. Also, we are producing additional text features for our model with Word2Vec. train_embedding is the module to train Word2Vec on current movies' data.
 5. Finally, we concatenate the features and call cosine similarity measure for each movie pair. Then we sort by sim measure and select top 10.
 
 ## Data Set Up
 
 Script to normalize Kaggle data currently is not uploaded.
-Instead, all tables, imported in xlsx, are present in data folder.
+Instead, all tables, imported in xlsx, are present in "data" folder.
 
 We need to create tables first. You'll need to:
 
@@ -70,8 +70,8 @@ python populate_languages
 
 ## TO DO
 1. Improve recommendations for user.
-2. Add rating for movies.
-3. Automate scripts execution for populating the database.
+2. Automate scripts execution for populating the database.
+3. Integrate rating into recommendations. 
 
 
 
