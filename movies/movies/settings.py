@@ -16,10 +16,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-MODEL_DIR = "C:/movies-search-system/word2vec.model"
-PCA_DIR = "C:/movies-search-system/pca_model.pkl"
-
 GENERAL = ["budget", "popularity", "year", "revenue", "runtime", "vote_average"]
 
 GENRES = ['Foreign', 'Telescene Film Group Productions', 'Aniplex', 'Music', 'Comedy', 'Animation', 'Action', 'TV Movie', 'Sentai Filmworks',
@@ -102,7 +98,10 @@ SPOKEN_LANGUAGES = ['Fulfulde',
 
 FEATURES = GENERAL+GENRES+SPOKEN_LANGUAGES
 
-METADATA_PATH = 'C:/movies-search-system/data/movies_metadata_short.xlsx'
+METADATA_PATH = BASE_DIR / 'data' / 'movies_metadata_short.xlsx'
+MODEL_DIR = BASE_DIR / 'word2vec.model'
+
+
 #  metadata model reads the following file always
 
 
@@ -115,7 +114,7 @@ SECRET_KEY = 'django-insecure-f5^&ph#wvrn*=9k&t&422#0jc)1otk7+x6wnm%(&q!lien1g7y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -131,6 +130,7 @@ INSTALLED_APPS = [
     'menu.apps.MenuConfig',
     'users.apps.UsersConfig',
     'playlist.apps.PlaylistConfig',
+    'forum.apps.ForumConfig'
 ]
 
 MIDDLEWARE = [

@@ -67,8 +67,7 @@ def show_movie(request, movie_id):
     movie = Movie.objects.get(movie_id__exact=movie_id)
     metadata = MovieMetaData.objects.get(movie_id=movie_id)
 
-    wordvec = Word2Vec.load(settings.MODEL_DIR)
-    pca = joblib.load(settings.PCA_DIR)
+    wordvec = Word2Vec.load(str(settings.MODEL_DIR))
 
     genres = movie.genres.all()
     genres_in_movie = genres.values_list('genre', flat=True)
