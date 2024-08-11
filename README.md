@@ -70,7 +70,7 @@ python populate_languages
 
 ## TO DO
 1. Improve recommendations for user.
-2. Automate scripts execution for populating the database.
+2. Automate scripts execution for populating the database (after pull, run migs in docker and populate database script).
 3. Integrate rating into recommendations. 
 
 
