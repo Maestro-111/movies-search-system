@@ -220,8 +220,7 @@ def add_movie_to_playlist(request, movie_id):
 @login_required
 def get_my_recommendations(request):
 
-    wordvec = Word2Vec.load(settings.MODEL_DIR)
-    pca = joblib.load(settings.PCA_DIR)
+    wordvec = Word2Vec.load(str(settings.MODEL_DIR))
 
     playlists = Playlist.objects.filter(user=request.user)
 

@@ -101,6 +101,8 @@ FEATURES = GENERAL+GENRES+SPOKEN_LANGUAGES
 METADATA_PATH = BASE_DIR / 'data' / 'movies_metadata_short.xlsx'
 MODEL_DIR = BASE_DIR / 'word2vec.model'
 
+print(BASE_DIR)
+
 
 #  metadata model reads the following file always
 

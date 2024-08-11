@@ -9,14 +9,11 @@ COPY requirements.txt /app/
 
 # Install the requirements
 RUN pip install --no-cache-dir -r requirements.txt
+RUN python -m nltk.downloader punkt
 
 # Copy the rest of the project files
 COPY movies /app/movies
 COPY movies/word2vec.model /app/movies/word2vec.model
-
-# Create the 'data' subfolder and move the Excel file
-RUN mkdir -p /app/movies/data
-COPY movies/data/movies_metadata_short.xlsx /app/movies/data/movies_metadata_short.xlsx
 
 # Set environment variables
 ENV DJANGO_SETTINGS_MODULE=movies.settings
