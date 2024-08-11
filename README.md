@@ -2,7 +2,7 @@
 
 ## Abstract
 This is a Django web app that allows user searching for their favorite movies.
-Also, for each movie system will provide up to 10 produce_recommendations. 
+Also, for each movie system will provide up to 10 recommendations. 
 Right now database, which is SQLite, contains around 25k movies. 
 
 <img width="1300" alt="teaser" src="./figure/sample.PNG">
