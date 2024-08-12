@@ -13,6 +13,7 @@ RUN python -m nltk.downloader punkt
 
 # Copy the rest of the project files
 COPY movies /app/movies
+COPY populate_database /app/populate_database
 COPY movies/word2vec.model /app/movies/word2vec.model
 
 # Set environment variables

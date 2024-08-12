@@ -16,7 +16,7 @@ if __name__ == "__main__":
     metadata = populate_metadata()
     movie_languages = populate_movie_languages()
     movie_genres = populate_movie_genres()
-    
+
     movies.run()
     metadata.run()
     genres.run()
