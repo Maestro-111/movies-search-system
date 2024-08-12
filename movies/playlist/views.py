@@ -101,7 +101,7 @@ def remove_movie_from_playlist(request, playlist_id, movie_id):
     return redirect('view_single_playlist', playlist_id=playlist.id)
 
 @login_required
-def give_movie_rating(requst):
+def give_movie_rating(request):
     pass
 
 @login_required

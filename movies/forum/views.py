@@ -1,15 +1,15 @@
 from django.shortcuts import render,redirect
 from django.urls import reverse
 from django.http import HttpResponse,HttpResponseNotFound,HttpResponseRedirect
-
-# Create your views here.
+from .models import Review
+from .forms import ReviewForm
 
 def forum_menu(request):
     return render(request,'forum/forum_menu.html')
 
 
 def write_review(request):
-    return HttpResponse("writing")
+    return render(request,'forum/write_review.html')
 
 
 def view_reviews(request):

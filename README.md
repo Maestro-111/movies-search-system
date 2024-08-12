@@ -27,6 +27,8 @@ SQLite is used to store it.
 
 ## Data Set Up
 
+(Docker set up is coming up...)
+
 Script to normalize Kaggle data currently is not uploaded.
 Instead, all tables, imported in xlsx, are present in "data" folder.
 
