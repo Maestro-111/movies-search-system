@@ -1,51 +1,58 @@
 import pandas as pd
-
-import os
-import pandas as pd
 import sqlite3
+from pathlib import Path
+
+class populate_language:
 
 
-conn = sqlite3.connect('C:/movies-search-system/movies/db.sqlite3')
-df = pd.read_excel('C:/movies-search-system/data/languages.xlsx',index_col=0)
+    BASE_DIR = Path(__file__).resolve().parent.parent
 
-cursor = conn.cursor()
+    def __init__(self):
 
-for row in df.itertuples(index=False):
+        self.database_path = self.BASE_DIR / "movies" / "db.sqlite3"
+        self.df_path = self.BASE_DIR / "movies" / "data" / "languages.xlsx"
 
-    count = len(row)
-    parsed_vales = ""
+    def run(self):
 
-    for value in row:
+        conn = sqlite3.connect(self.database_path)
+        df = pd.read_excel(self.df_path, index_col=0)
 
-        if count == 1:
-            if isinstance(value, str):
-                value = value.replace("'", "")
-                parsed_vales += (f"'{value}'")
-            else:
-                parsed_vales += (str(value))
-        else:
-            if isinstance(value, str):
-                value = value.replace("'", "")
-                parsed_vales += (f"'{value}'" + ', ')
-            else:
-                parsed_vales += (str(value) + ', ')
+        cursor = conn.cursor()
 
+        for row in df.itertuples(index=False):
 
-        count -= 1
+            count = len(row)
+            parsed_vales = ""
 
-    statement = f"INSERT INTO movie_movielanguages (language,language_id)" \
-                f" VALUES ({parsed_vales});"
+            for value in row:
 
-    print(statement)
+                if count == 1:
+                    if isinstance(value, str):
+                        value = value.replace("'", "")
+                        parsed_vales += (f"'{value}'")
+                    else:
+                        parsed_vales += (str(value))
+                else:
+                    if isinstance(value, str):
+                        value = value.replace("'", "")
+                        parsed_vales += (f"'{value}'" + ', ')
+                    else:
+                        parsed_vales += (str(value) + ', ')
 
-    try:
-        cursor.execute(statement)
-    except Exception as e:
-        print(e)
-        exit(1)
+                count -= 1
 
-# Commit changes
-conn.commit()
+            statement = f"INSERT INTO movie_movielanguages (language,language_id)" \
+                        f" VALUES ({parsed_vales});"
 
-conn.close()
+            print(statement)
+
+            try:
+                cursor.execute(statement)
+            except Exception as e:
+                print(e)
+                exit(1)
+
+        # Commit changes
+        conn.commit()
+        conn.close()
 

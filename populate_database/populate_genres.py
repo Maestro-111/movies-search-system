@@ -1,51 +1,60 @@
-import pandas as pd
 
-import os
 import pandas as pd
 import sqlite3
+from pathlib import Path
 
 
-conn = sqlite3.connect('C:/movies-search-system/movies/db.sqlite3')
-df = pd.read_excel('C:/movies-search-system/data/genres.xlsx',index_col=0)
+class populate_genres:
 
-cursor = conn.cursor()
+    BASE_DIR = Path(__file__).resolve().parent.parent
 
-for row in df.itertuples(index=False):
+    def __init__(self):
 
-    count = len(row)
-    parsed_vales = ""
-
-    for value in row:
-
-        if count == 1:
-            if isinstance(value, str):
-                value = value.replace("'", "")
-                parsed_vales += (f"'{value}'")
-            else:
-                parsed_vales += (str(value))
-        else:
-            if isinstance(value, str):
-                value = value.replace("'", "")
-                parsed_vales += (f"'{value}'" + ', ')
-            else:
-                parsed_vales += (str(value) + ', ')
+        self.database_path = self.BASE_DIR / "movies" / "db.sqlite3"
+        self.df_path = self.BASE_DIR / "movies" / "data" / "genres.xlsx"
 
 
-        count -= 1
+    def run(self):
 
-    statement = f"INSERT INTO movie_moviegenres (genre,genre_id)" \
-                f" VALUES ({parsed_vales});"
+        conn = sqlite3.connect(self.database_path)
+        df = pd.read_excel(self.df_path, index_col=0)
 
-    print(statement)
+        cursor = conn.cursor()
 
-    try:
-        cursor.execute(statement)
-    except Exception as e:
-        print(e)
-        exit(1)
+        for row in df.itertuples(index=False):
 
-# Commit changes
-conn.commit()
+            count = len(row)
+            parsed_vales = ""
 
-conn.close()
+            for value in row:
+
+                if count == 1:
+                    if isinstance(value, str):
+                        value = value.replace("'", "")
+                        parsed_vales += (f"'{value}'")
+                    else:
+                        parsed_vales += (str(value))
+                else:
+                    if isinstance(value, str):
+                        value = value.replace("'", "")
+                        parsed_vales += (f"'{value}'" + ', ')
+                    else:
+                        parsed_vales += (str(value) + ', ')
+
+                count -= 1
+
+            statement = f"INSERT INTO movie_moviegenres (genre,genre_id)" \
+                        f" VALUES ({parsed_vales});"
+
+            print(statement)
+
+            try:
+                cursor.execute(statement)
+            except Exception as e:
+                print(e)
+                exit(1)
+
+        # Commit changes
+        conn.commit()
+        conn.close()
 
