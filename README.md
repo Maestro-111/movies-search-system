@@ -27,10 +27,8 @@ SQLite is used to store it.
 
 ## Data Set Up
 
-(Docker set up is coming up...)
-
 Script to normalize Kaggle data currently is not uploaded.
-Instead, all tables, imported in xlsx, are present in "data" folder.
+Instead, all tables, imported in xlsx, are present in "movies/data" folder.
 
 We need to create tables first. You'll need to:
 
@@ -61,19 +59,53 @@ cd ..
 cd populate_database
 venv\Scripts\activate
 
-python populate_movies
-python populate_metadata
-python populate_genres
-python populate_language
-python populate_movie_genres
-python populate_languages
+python main.py
+```
+
+
+## Docker Set up
+
+1) Create an image:
+
+```
+docker build -t my-django-app .
+```
+
+2) Run container 
+
+```
+docker run -p 8000:8000 my-django-app
+```
+
+3) Get id of your container 
+
+```
+dokcer ps 
+```
+
+4) start a shell session in container
+
+```
+docker exec -it <container_id> /bin/bash
+```
+
+5) run migrations and populate database script
+
+```
+cd movies
+python manage.py makemigrations
+python manage.py migrate
+cd ..
+cd populate_database
+python main.py
+exit()
 ```
 
 
 ## TO DO
 1. Improve recommendations for user.
-2. Automate scripts execution for populating the database (after pull, run migs in docker and populate database script).
-3. Integrate rating into recommendations. 
+2. Integrate rating into recommendations. 
+3. Updating Forum Section.
 
 
 

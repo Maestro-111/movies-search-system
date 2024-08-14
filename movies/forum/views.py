@@ -44,7 +44,25 @@ def write_review(request, movie_id):
 
 def view_single_review(request, review_id):
 
-    return render(request,'forum/view_single_review.html')
+    review = Review.objects.get(id__exact=review_id)
+    movie_id = review.movie_id
+
+    movie = Movie.objects.get(movie_id__exact=movie_id)
+
+    genres = movie.genres.all()
+    genres_in_movie = genres.values_list('genre', flat=True)
+
+    languages = movie.languages.all()
+    language_in_movie = languages.values_list('language', flat=True)
+
+    context = {
+        'movie':movie,
+        'review':review,
+        'genres':genres_in_movie,
+        'languages':language_in_movie
+    }
+
+    return render(request,'forum/view_single_review.html',context)
 
 
 def view_reviews(request):

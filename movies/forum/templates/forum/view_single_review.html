@@ -6,4 +6,26 @@
 
 {% block content %}
 
+    <section class="display-details">
+
+        <p><strong>Movie Name:</strong> {{ movie.original_title }}</p>
+        <p><strong>Year:</strong> {{ movie.year }}</p>
+        <p><strong>Tagline:</strong> {{ movie.tagline }}</p>
+        <p><strong>Genres:</strong>
+            {% for genre in genres %}
+                {{ genre }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        <p><strong>Spoken Languages:</strong>
+            {% for language in languages %}
+                {{ language }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+        <p><strong>Review:</strong> {{review.review}} </p>
+    </section>
+
+    <nav>
+        <p><a href="{% url 'forum_menu' %}" class="bold-link">Return to the Forum Menu</a></p>
+    </nav>
+
 {% endblock %}

@@ -11,8 +11,9 @@
         <ul>
             {% for review in reviews %}
                 <li style="display: flex; align-items: center;">
-                    <span class="label">Review ID :</span>
-                    <a href="{{ review.get_absolute_url }}">{{ review.id }}</a>
+                    <a href="{{ review.get_absolute_url }}">
+                        Written by User: {{ review.user.username }}; on Movie: {{ review.movie.original_title }}
+                    </a>
 
                 </li>
                 {% if not forloop.last %}
@@ -24,5 +25,9 @@
     {% else %}
         <p>No Reviews.</p>
     {% endif %}
+
+    <nav>
+        <p><a href="{% url 'forum_menu' %}" class="bold-link">Return to the Forum Menu</a></p>
+    </nav>
 
 {% endblock %}
