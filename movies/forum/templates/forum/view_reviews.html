@@ -6,5 +6,23 @@
 
 {% block content %}
 
+    {% if reviews %}
+        <h2>Reviews Results:</h2>
+        <ul>
+            {% for review in reviews %}
+                <li style="display: flex; align-items: center;">
+                    <span class="label">Review ID :</span>
+                    <a href="{{ review.get_absolute_url }}">{{ review.id }}</a>
+
+                </li>
+                {% if not forloop.last %}
+                <hr>
+                {% endif %}
+            {% empty %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No Reviews.</p>
+    {% endif %}
 
 {% endblock %}

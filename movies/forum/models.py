@@ -16,3 +16,6 @@ class Review(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.movie.original_title}: {self.rating}'
+
+    def get_absolute_url(self):
+        return reverse('view_single_review', kwargs={'review_id': self.id})
