@@ -2,7 +2,7 @@ from django.shortcuts import render,get_object_or_404
 from django.http import HttpResponse,HttpResponseNotFound,HttpResponseRedirect
 from .models import Movie
 from fuzzywuzzy import process
-from .models import Movie,MovieMetaData
+from .models import Movie,MovieMetaData,Rating
 import numpy as np
 from numba import jit
 
@@ -83,6 +83,11 @@ def show_movie(request, movie_id):
     all_metadata = list(MovieMetaData.objects.all().select_related('movie'))
     all_metadata_dict = {meta.movie_id: meta for meta in all_metadata}
 
+    if request.user.is_authenticated:
+        user_ratings = {rating.movie.movie_id: rating.rating for rating in Rating.objects.filter(user=request.user)}
+    else:
+        user_ratings = {}
+
     cur_row_metadata_values = get_combined_features(all_metadata_dict.get(movie.movie_id), movie.overview, wordvec)
 
     metadata_rows = [
@@ -90,10 +95,11 @@ def show_movie(request, movie_id):
         for meta in all_metadata if meta.movie_id != movie.movie_id
     ]
 
-    recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows)
+    recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings)
     recommended_movies = []
 
-    for id in recommended_ids:
+    # fix filtering
+    for id in recommended_ids[:10]:
         try:
             recommended_movies.append(Movie.objects.get(movie_id__exact=id))
         except Exception as e:

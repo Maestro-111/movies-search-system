@@ -5,6 +5,9 @@ from django.conf import settings
 def produce_recommendations_1(cur_row_metadata_values, metadata_rows):
 
     """
+
+    legacy
+
     compute predictions ( dot products) for each cur_row_metadata_values and metadata_rows pair.
 
     using dot product
@@ -25,12 +28,15 @@ def produce_recommendations_1(cur_row_metadata_values, metadata_rows):
     return recommended_ids.tolist()
 
 
-def produce_recommendations(cur_row_metadata_values, metadata_rows):
-
+def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, alpha=0.5):
     """
+    Produce movie recommendations using cosine similarity and user ratings.
 
-    using cosine sim
-
+    :param cur_row_metadata_values: Array of current movie features.
+    :param metadata_rows: List of tuples (movie_id, movie_features_array).
+    :param user_ratings: Dictionary of movie_id to user rating.
+    :param alpha: Weight factor to balance between similarity and rating (0 < alpha < 1).
+    :return: List of recommended movie IDs.
     """
 
     meta_ids, meta_matrix = zip(*metadata_rows)
@@ -52,13 +58,23 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows):
     cosine_similarities = np.dot(normalized_meta_matrix, normalized_cur_row_metadata_values)
 
     meta_ids = np.array(meta_ids)
-    combined = np.vstack((meta_ids, cosine_similarities)).T
+    combined_scores = []
 
-    # Sort by cosine similarity in descending order
-    sorted_indices = np.argsort(-combined[:, 1])
-    recommended_ids = combined[sorted_indices[:10], 0].astype(int)
+    for i, movie_id in enumerate(meta_ids):
+        # Get user rating for this movie if available, otherwise default to neutral rating (e.g., 0.5)
+        user_rating = user_ratings.get(movie_id, 2.5)
 
-    return recommended_ids.tolist()
+        # Combine cosine similarity with user rating
+        combined_score = alpha * cosine_similarities[i] + (1 - alpha) * user_rating
+        combined_scores.append((movie_id, combined_score))
+
+    # Sort by combined score in descending order
+    combined_scores.sort(key=lambda x: -x[1])
+
+    # Extract top 10 recommended movie IDs
+    recommended_ids = [movie_id for movie_id, score in combined_scores[:30]]
+
+    return recommended_ids
 
 
 def get_average_word_vector(tokens, model):

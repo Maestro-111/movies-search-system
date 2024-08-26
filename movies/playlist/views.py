@@ -113,6 +113,7 @@ def view_single_playlist(request, playlist_id:int):
     if request.method == 'POST' and 'name' in request.POST:
 
         form = PlaylistForm(request.POST, instance=playlist)
+
         if form.is_valid():
             form.save()
             return redirect('view_single_playlist', playlist_id=playlist.id)
@@ -121,6 +122,7 @@ def view_single_playlist(request, playlist_id:int):
 
     # Handle rating submission
     if request.method == 'POST' and 'rating' in request.POST:
+
         movie_id = request.POST.get('movie_id')
         movie = get_object_or_404(Movie, movie_id=movie_id)
         rating_form = RatingForm(request.POST)
@@ -221,13 +223,13 @@ def add_movie_to_playlist(request, movie_id):
 def get_my_recommendations(request):
 
     wordvec = Word2Vec.load(str(settings.MODEL_DIR))
-
     playlists = Playlist.objects.filter(user=request.user)
 
     if not playlists.exists():
         return render(request, 'playlist/show_recommendations.html', {"error_message": "You do not have any playlists"})
 
     selected_movies = set()
+
     for playlist in playlists:
         selected_movies.update(playlist.movie.all())
 
@@ -240,18 +242,24 @@ def get_my_recommendations(request):
     all_metadata = list(MovieMetaData.objects.all().select_related('movie'))
     all_metadata_dict = {meta.movie_id: meta for meta in all_metadata}
 
+    user_ratings = {rating.movie.movie_id:rating.rating for rating in Rating.objects.filter(user=request.user)}
+
     for movie in selected_movies:
+
         cur_metadata = all_metadata_dict.get(movie.movie_id)
+
         if not cur_metadata:
             continue
 
         cur_row_metadata_values = get_combined_features(cur_metadata, movie.overview, wordvec)
+
         metadata_rows = [
             (meta.movie_id, get_combined_features(meta, all_metadata_dict[meta.movie_id].movie.overview, wordvec))
             for meta in all_metadata if meta.movie_id != movie.movie_id
         ]
 
-        recommended_movie_ids = produce_recommendations(cur_row_metadata_values, metadata_rows)
+        recommended_movie_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings)
+
         recommended_movies = [
             Movie.objects.get(movie_id=id) for id in recommended_movie_ids if id in all_metadata_dict and all_metadata_dict[id].movie.original_title not in seen_titles
         ]
