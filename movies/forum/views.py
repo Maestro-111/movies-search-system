@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.http import HttpResponse,HttpResponseNotFound,HttpResponseRedirect
 
-from movie.models import Movie
+from movie.models import Movie,Rating
 from .models import Review
 from .forms import ReviewForm
 
@@ -45,9 +45,15 @@ def write_review(request, movie_id):
 def view_single_review(request, review_id):
 
     review = Review.objects.get(id__exact=review_id)
+
     movie_id = review.movie_id
+    user = review.user
 
     movie = Movie.objects.get(movie_id__exact=movie_id)
+    rating = Rating.objects.filter(user=user, movie=movie).first()
+
+    rating = rating.rating if rating else "No Rating"
+
 
     genres = movie.genres.all()
     genres_in_movie = genres.values_list('genre', flat=True)
@@ -59,7 +65,8 @@ def view_single_review(request, review_id):
         'movie':movie,
         'review':review,
         'genres':genres_in_movie,
-        'languages':language_in_movie
+        'languages':language_in_movie,
+        'rating':rating
     }
 
     return render(request,'forum/view_single_review.html',context)

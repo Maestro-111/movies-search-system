@@ -49,4 +49,8 @@
         <p><a href="{% url 'view_playlists' %}" class="bold-link">Return to your playlists</a></p>
     </nav>
 
+    <nav>
+        <p><a href="{% url 'get_recommendation_for_playlist' playlist.id %}" class="bold-link">View Recommendations for this playlist</a></p>
+    </nav>
+
 {% endblock %}

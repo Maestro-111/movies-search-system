@@ -28,7 +28,8 @@ def produce_recommendations_1(cur_row_metadata_values, metadata_rows):
     return recommended_ids.tolist()
 
 
-def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, alpha=0.5):
+def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, alpha=0.95):
+
     """
     Produce movie recommendations using cosine similarity and user ratings.
 

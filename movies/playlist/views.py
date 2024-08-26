@@ -219,22 +219,9 @@ def add_movie_to_playlist(request, movie_id):
 
 
 
+
 @login_required
-def get_my_recommendations(request):
-
-    wordvec = Word2Vec.load(str(settings.MODEL_DIR))
-    playlists = Playlist.objects.filter(user=request.user)
-
-    if not playlists.exists():
-        return render(request, 'playlist/show_recommendations.html', {"error_message": "You do not have any playlists"})
-
-    selected_movies = set()
-
-    for playlist in playlists:
-        selected_movies.update(playlist.movie.all())
-
-    if not selected_movies:
-        return render(request, 'playlist/show_recommendations.html', {"error_message": "You do not have any movies in your playlists"})
+def group_recommendation(request, selected_movies, wordvec):
 
     seen_titles = {movie.original_title for movie in selected_movies}
     recommendations = set()
@@ -266,8 +253,47 @@ def get_my_recommendations(request):
 
         sample_size = min(random.randint(1, len(recommended_movies)), 10)
         recommendations.update(random.sample(recommended_movies, k=sample_size))
+        # recommendations = list(recommendations)[:10]
 
     return render(request, 'playlist/show_recommendations.html', {'result': list(recommendations)})
+
+
+
+
+@login_required
+def get_recommendation_for_playlist(request, playlist_id):
+
+    wordvec = Word2Vec.load(str(settings.MODEL_DIR))
+    playlist = Playlist.objects.get(id=playlist_id)
+
+    selected_movies = set(playlist.movie.all())
+
+    if not selected_movies:
+        return render(request, 'playlist/show_recommendations.html', {"error_message": "You do not have any movies in your playlists"})
+
+    return group_recommendation(request, selected_movies, wordvec)
+
+
+
+@login_required
+def get_my_recommendations(request):
+
+    wordvec = Word2Vec.load(str(settings.MODEL_DIR))
+    playlists = Playlist.objects.filter(user=request.user)
+
+    if not playlists.exists():
+        return render(request, 'playlist/show_recommendations.html', {"error_message": "You do not have any playlists"})
+
+    selected_movies = set()
+
+    for playlist in playlists:
+        selected_movies.update(playlist.movie.all())
+
+    if not selected_movies:
+        return render(request, 'playlist/show_recommendations.html', {"error_message": "You do not have any movies in your playlists"})
+
+    return group_recommendation(request, selected_movies, wordvec)
+
 
 
 

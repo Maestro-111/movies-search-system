@@ -100,6 +100,7 @@ def show_movie(request, movie_id):
 
     # fix filtering
     for id in recommended_ids[:10]:
+
         try:
             recommended_movies.append(Movie.objects.get(movie_id__exact=id))
         except Exception as e:

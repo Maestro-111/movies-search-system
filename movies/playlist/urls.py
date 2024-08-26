@@ -11,5 +11,6 @@ urlpatterns = [
     path('add_movie_to_playlist/<int:movie_id>/', views.add_movie_to_playlist, name="add_movie_to_playlist"),
     path('remove_movie_from_playlist/<int:playlist_id>/<int:movie_id>/', views.remove_movie_from_playlist, name='remove_movie_from_playlist'),
     path('delete_playlist/<int:playlist_id>/', views.delete_playlist, name='delete_playlist'),
-    path('get_my_recommendations/', views.get_my_recommendations, name = 'get_my_recommendations')
+    path('get_my_recommendations/', views.get_my_recommendations, name = 'get_my_recommendations'),
+    path('get_recommendation_for_playlist/<int:playlist_id>/', views.get_recommendation_for_playlist, name= 'get_recommendation_for_playlist'),
 ]
