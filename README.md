@@ -104,7 +104,7 @@ exit()
 
 ## TO DO
 1. Improve recommendations for user.
-2. Integrate rating into recommendations. 
+2. Tweak the final equation with rating (recommendations.py produce_recommendations func) 
 3. Updating Forum Section.
 
 
