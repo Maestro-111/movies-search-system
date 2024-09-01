@@ -3,7 +3,10 @@
 ## Abstract
 This is a Django web app that allows user searching for their favorite movies.
 Also, for each movie system will provide up to 10 recommendations. 
-Right now database, which is SQLite, contains around 25k movies. 
+
+Also, users can create their playlist and based on movies in playlist they will get up to 10 recommendations. 
+
+Right now database, which is SQLite, contains around 25k movies.
 
 <img width="1300" alt="teaser" src="./figure/sample.PNG">
 
@@ -32,10 +35,12 @@ Instead, all tables, imported in xlsx, are present in "movies/data" folder.
 
 We need to create tables first. You'll need to:
 
-1) Activate vend and go to movies directory.
+1) Create venv, activate venv, install requirements and go to movies directory.
 
 ```
+python -m venv venv
 venv\Scripts\activate
+pip install -r requirements.txt 
 cd movies
 ```
 
@@ -51,14 +56,18 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-4) Finally, we populate the database. Run the scripts in populate_database in the following order:
+4) Finally, we populate the database. Deactivate current venv, go to populate_database and activate its venv.
 
 ```
 deactivate
 cd ..
 cd populate_database
 venv\Scripts\activate
+```
 
+Run main.py to populate created tables
+
+```
 python main.py
 ```
 
