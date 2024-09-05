@@ -6,6 +6,8 @@ from .models import Movie,MovieMetaData,Rating
 import numpy as np
 from numba import jit
 
+from django.core.cache import cache
+
 from recommendations import produce_recommendations
 from recommendations import get_text_vectors
 from recommendations import get_combined_features
@@ -95,12 +97,10 @@ def show_movie(request, movie_id):
         for meta in all_metadata if meta.movie_id != movie.movie_id
     ]
 
-    recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings)
+    recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, movie_id)
     recommended_movies = []
 
-    # fix filtering
-    for id in recommended_ids[:10]:
-
+    for id in recommended_ids:
         try:
             recommended_movies.append(Movie.objects.get(movie_id__exact=id))
         except Exception as e:

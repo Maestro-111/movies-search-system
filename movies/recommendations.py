@@ -1,6 +1,7 @@
 import numpy as np
 from nltk.tokenize import word_tokenize
 from django.conf import settings
+from django.core.cache import cache
 
 def produce_recommendations_1(cur_row_metadata_values, metadata_rows):
 
@@ -28,11 +29,12 @@ def produce_recommendations_1(cur_row_metadata_values, metadata_rows):
     return recommended_ids.tolist()
 
 
-def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, alpha=0.95):
+def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, movie_id, alpha=0.95):
 
     """
     Produce movie recommendations using cosine similarity and user ratings.
 
+    :param movie_id monitor current movie id to see if info if cached:
     :param cur_row_metadata_values: Array of current movie features.
     :param metadata_rows: List of tuples (movie_id, movie_features_array).
     :param user_ratings: Dictionary of movie_id to user rating.
@@ -40,40 +42,49 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings
     :return: List of recommended movie IDs.
     """
 
-    meta_ids, meta_matrix = zip(*metadata_rows)
-    meta_matrix = np.array(meta_matrix)
+    cache_key = f"my_view_cache_{movie_id}"
+    recommended_ids = cache.get(cache_key)
 
-    # Normalize the metadata rows and the current row values
-    meta_matrix_norm = np.linalg.norm(meta_matrix, axis=1, keepdims=True)
-    cur_row_metadata_values_norm = np.linalg.norm(cur_row_metadata_values)
+    print(f"for this movie id: {movie_id} : \n")
+    print(recommended_ids)
 
-    # Avoid division by zero
-    meta_matrix_norm[meta_matrix_norm == 0] = 1
-    if cur_row_metadata_values_norm == 0:
-        cur_row_metadata_values_norm = 1
+    if not recommended_ids:
 
-    normalized_meta_matrix = meta_matrix / meta_matrix_norm
-    normalized_cur_row_metadata_values = cur_row_metadata_values / cur_row_metadata_values_norm
+        meta_ids, meta_matrix = zip(*metadata_rows)
+        meta_matrix = np.array(meta_matrix)
 
-    # Compute cosine similarities
-    cosine_similarities = np.dot(normalized_meta_matrix, normalized_cur_row_metadata_values)
+        # Normalize the metadata rows and the current row values
+        meta_matrix_norm = np.linalg.norm(meta_matrix, axis=1, keepdims=True)
+        cur_row_metadata_values_norm = np.linalg.norm(cur_row_metadata_values)
 
-    meta_ids = np.array(meta_ids)
-    combined_scores = []
+        # Avoid division by zero
+        meta_matrix_norm[meta_matrix_norm == 0] = 1
+        if cur_row_metadata_values_norm == 0:
+            cur_row_metadata_values_norm = 1
 
-    for i, movie_id in enumerate(meta_ids):
-        # Get user rating for this movie if available, otherwise default to neutral rating (e.g., 0.5)
-        user_rating = user_ratings.get(movie_id, 2.5)
+        normalized_meta_matrix = meta_matrix / meta_matrix_norm
+        normalized_cur_row_metadata_values = cur_row_metadata_values / cur_row_metadata_values_norm
 
-        # Combine cosine similarity with user rating
-        combined_score = alpha * cosine_similarities[i] + (1 - alpha) * user_rating
-        combined_scores.append((movie_id, combined_score))
+        # Compute cosine similarities
+        cosine_similarities = np.dot(normalized_meta_matrix, normalized_cur_row_metadata_values)
 
-    # Sort by combined score in descending order
-    combined_scores.sort(key=lambda x: -x[1])
+        meta_ids = np.array(meta_ids)
+        combined_scores = []
 
-    # Extract top 10 recommended movie IDs
-    recommended_ids = [movie_id for movie_id, score in combined_scores[:30]]
+        for i, movie_id in enumerate(meta_ids):
+            # Get user rating for this movie if available, otherwise default to neutral rating (e.g., 0.5)
+            user_rating = user_ratings.get(movie_id, 2.5)
+
+            # Combine cosine similarity with user rating
+            combined_score = alpha * cosine_similarities[i] + (1 - alpha) * user_rating
+            combined_scores.append((movie_id, combined_score))
+
+        # Sort by combined score in descending order
+        combined_scores.sort(key=lambda x: -x[1])
+
+        # Extract top 10 recommended movie IDs
+        recommended_ids = [movie_id for movie_id, score in combined_scores[:10]]
+        cache.set(cache_key, recommended_ids, timeout=300)  # Timeout is optional
 
     return recommended_ids
 

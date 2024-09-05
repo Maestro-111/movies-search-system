@@ -16,6 +16,8 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+print(BASE_DIR)
+
 GENERAL = ["budget", "popularity", "year", "revenue", "runtime", "vote_average"]
 
 GENRES = ['Foreign', 'Telescene Film Group Productions', 'Aniplex', 'Music', 'Comedy', 'Animation', 'Action', 'TV Movie', 'Sentai Filmworks',
@@ -101,9 +103,6 @@ FEATURES = GENERAL+GENRES+SPOKEN_LANGUAGES
 METADATA_PATH = BASE_DIR / 'data' / 'movies_metadata_short.xlsx'
 MODEL_DIR = BASE_DIR / 'word2vec.model'
 
-print(BASE_DIR)
-
-
 #  metadata model reads the following file always
 
 
@@ -175,6 +174,14 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+        "LOCATION": os.path.join(BASE_DIR, "movies_cache"),
+        'TIMEOUT': 300,
     }
 }
 

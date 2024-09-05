@@ -10,7 +10,7 @@ from .forms import PlaylistForm, RatingForm
 import numpy as np
 
 from django.conf import settings
-
+from django.core.cache import cache
 from recommendations import produce_recommendations
 from recommendations import get_text_vectors
 from recommendations import get_combined_features
@@ -245,7 +245,7 @@ def group_recommendation(request, selected_movies, wordvec):
             for meta in all_metadata if meta.movie_id != movie.movie_id
         ]
 
-        recommended_movie_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings)
+        recommended_movie_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, movie.movie_id)
 
         recommended_movies = [
             Movie.objects.get(movie_id=id) for id in recommended_movie_ids if id in all_metadata_dict and all_metadata_dict[id].movie.original_title not in seen_titles
@@ -253,7 +253,6 @@ def group_recommendation(request, selected_movies, wordvec):
 
         sample_size = min(random.randint(1, len(recommended_movies)), 10)
         recommendations.update(random.sample(recommended_movies, k=sample_size))
-        # recommendations = list(recommendations)[:10]
 
     return render(request, 'playlist/show_recommendations.html', {'result': list(recommendations)})
 
@@ -271,7 +270,7 @@ def get_recommendation_for_playlist(request, playlist_id):
     if not selected_movies:
         return render(request, 'playlist/show_recommendations.html', {"error_message": "You do not have any movies in your playlists"})
 
-    return group_recommendation(request, selected_movies, wordvec)
+    return group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec)
 
 
 
@@ -292,7 +291,7 @@ def get_my_recommendations(request):
     if not selected_movies:
         return render(request, 'playlist/show_recommendations.html', {"error_message": "You do not have any movies in your playlists"})
 
-    return group_recommendation(request, selected_movies, wordvec)
+    return group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec)
 
 
 
