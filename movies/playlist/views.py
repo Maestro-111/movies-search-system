@@ -219,8 +219,6 @@ def add_movie_to_playlist(request, movie_id):
 
 
 
-
-@login_required
 def group_recommendation(request, selected_movies, wordvec):
 
     seen_titles = {movie.original_title for movie in selected_movies}
