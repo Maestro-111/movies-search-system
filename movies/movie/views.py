@@ -66,6 +66,9 @@ def movie_search(request):
 
 def show_movie(request, movie_id):
 
+    cache_key = f"recommended_ids_{movie_id}"
+    recommended_ids = cache.get(cache_key)
+
     movie = Movie.objects.get(movie_id__exact=movie_id)
     metadata = MovieMetaData.objects.get(movie_id=movie_id)
 
@@ -77,27 +80,31 @@ def show_movie(request, movie_id):
     languages = movie.languages.all()
     language_in_movie = languages.values_list('language', flat=True)
 
-    print(movie)
-    print(metadata)
-    print(genres_in_movie)
-    print(language_in_movie)
+    if not recommended_ids:
 
-    all_metadata = list(MovieMetaData.objects.all().select_related('movie'))
-    all_metadata_dict = {meta.movie_id: meta for meta in all_metadata}
+        print(movie)
+        print(metadata)
+        print(genres_in_movie)
+        print(language_in_movie)
 
-    if request.user.is_authenticated:
-        user_ratings = {rating.movie.movie_id: rating.rating for rating in Rating.objects.filter(user=request.user)}
-    else:
-        user_ratings = {}
+        all_metadata = list(MovieMetaData.objects.all().select_related('movie'))
+        all_metadata_dict = {meta.movie_id: meta for meta in all_metadata}
 
-    cur_row_metadata_values = get_combined_features(all_metadata_dict.get(movie.movie_id), movie.overview, wordvec)
+        if request.user.is_authenticated:
+            user_ratings = {rating.movie.movie_id: rating.rating for rating in Rating.objects.filter(user=request.user)}
+        else:
+            user_ratings = {}
 
-    metadata_rows = [
-        (meta.movie_id, get_combined_features(meta, all_metadata_dict[meta.movie_id].movie.overview, wordvec))
-        for meta in all_metadata if meta.movie_id != movie.movie_id
-    ]
+        cur_row_metadata_values = get_combined_features(all_metadata_dict.get(movie.movie_id), movie.overview, wordvec)
 
-    recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, movie_id)
+        metadata_rows = [
+            (meta.movie_id, get_combined_features(meta, all_metadata_dict[meta.movie_id].movie.overview, wordvec))
+            for meta in all_metadata if meta.movie_id != movie.movie_id
+        ]
+
+        recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings)
+        cache.set(cache_key, recommended_ids, timeout=300)
+
     recommended_movies = []
 
     for id in recommended_ids:
