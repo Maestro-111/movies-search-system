@@ -1,7 +1,8 @@
 asgiref==3.8.1
 click==8.1.7
 colorama==0.4.6
-Django==4.2.1
+Django==5.1.1
+django-debug-toolbar==4.4.6
 et-xmlfile==1.1.0
 fuzzywuzzy==0.18.0
 gensim==4.3.2

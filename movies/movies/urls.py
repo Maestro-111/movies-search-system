@@ -18,6 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from menu.views import page_not_found
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,6 +27,6 @@ urlpatterns = [
     path('users/', include('users.urls')),
     path('playlist/', include('playlist.urls')),
     path('forum/', include('forum.urls'))
-]
+] + debug_toolbar_urls()
 
 handler404 = page_not_found

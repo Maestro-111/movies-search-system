@@ -255,9 +255,6 @@ def group_recommendation(request, selected_movies, wordvec):
     return list(recommendations)
 
 
-
-
-
 @login_required
 def get_recommendation_for_playlist(request, playlist_id):
 
