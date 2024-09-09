@@ -23,10 +23,19 @@ SQLite is used to store it.
 ## Methodology
 
 1. Our recommendation system is content based - it makes predictions based only on the movies you selected.
-2. As a baseline we are using cosine similarity. Each movie has its own numeric representation (vector) which is stored in SQLite.
-3. We are reducing dim of movie numeric representation with PCA. 
-4. Also, we are producing additional text features for our model with Word2Vec. train_embedding is the module to train Word2Vec on current movies' data.
-5. Finally, we concatenate the features and call cosine similarity measure for each movie pair. Then we sort by sim measure and select top 10.
+2. As a baseline we are using cosine similarity. Each movie has its own numeric representation (vector) which is stored in SQLite (movie metadata table).
+3. Also, we are producing additional text features for our model with Word2Vec. train_embedding is the module to train Word2Vec on current movies' data.
+4. Finally, we concatenate the features and call cosine similarity measure for each movie pair. Then we sort by similarity measure and select top 10.
+5. We store recommendation in movies_cache folder (FileBasedCache).
+
+## Project Set Up
+
+You can clone rep from GitHub:
+
+```
+git clone https://github.com/Maestro-111/movies-search-system.git
+cd movies-search-system
+```
 
 ## Data Set Up
 
@@ -35,7 +44,7 @@ Instead, all tables, imported in xlsx, are present in "movies/data" folder.
 
 We need to create tables first. You'll need to:
 
-1) Create venv, activate venv, install requirements and go to movies directory.
+1) Create venv (virtual environment), activate venv, install requirements and go to movies directory.
 
 ```
 python -m venv venv
@@ -56,7 +65,7 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-4) Finally, we populate the database. Deactivate current venv, go to populate_database and activate its venv.
+4) Finally, we populate the database. Deactivate current venv, go to populate_database module and activate its venv.
 
 ```
 deactivate
@@ -69,6 +78,22 @@ Run main.py to populate created tables
 
 ```
 python main.py
+```
+
+## How to Run:
+
+After you populated database, go back to movies dir
+```
+deactivate
+cd ..
+venv\Scripts\activate
+cd movies
+```
+
+Execute command:
+
+```
+python manage.py runserver
 ```
 
 
@@ -112,9 +137,10 @@ exit()
 
 
 ## TO DO
-1. Improve recommendations for user.
-2. Tweak the final equation with rating (recommendations.py produce_recommendations func) 
-3. Updating Forum Section.
+
+1. Tweak the final equation with rating (recommendations.py produce_recommendations func) 
+2. Updating Forum Section.
+3. Better front-end (?)
 
 
 

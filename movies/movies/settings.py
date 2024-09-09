@@ -16,7 +16,9 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-print(BASE_DIR)
+'''
+Hard coding features (columns) used in cosine sim 
+'''
 
 GENERAL = ["budget", "popularity", "year", "revenue", "runtime", "vote_average"]
 

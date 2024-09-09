@@ -37,6 +37,10 @@ def enter_query(request):
 
 def movie_search(request):
 
+    """
+    find best matches for the query. We are using fuzzywuzzy to get Levenstien Score
+    """
+
     query = request.GET.get('query')
     movies = None
 
@@ -52,19 +56,21 @@ def movie_search(request):
         title_to_score = {match[0]: match[1] for match in best_matches}
 
         movies = list(Movie.objects.filter(original_title__in=best_match_titles))
+
         for movie in movies:
             movie.score = title_to_score[movie.original_title]
 
         # Sort movies by score
         movies.sort(key=lambda x: x.score, reverse=True)
 
-
-    #print(movies)
-
     return render(request, 'movie/search_movie.html', {'movies': movies})
 
 
 def show_movie(request, movie_id):
+
+    """
+    show selected movie and display recommendations
+    """
 
     cache_key = f"recommended_ids_{movie_id}"
     recommended_ids = cache.get(cache_key)
