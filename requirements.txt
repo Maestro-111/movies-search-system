@@ -21,7 +21,7 @@ pytz==2024.1
 rapidfuzz==3.9.1
 regex==2024.5.15
 scikit-learn==1.5.1
-scipy==1.10.1
+scipy==1.11.2
 six==1.16.0
 smart-open==7.0.4
 sqlparse==0.5.0
