@@ -51,7 +51,6 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings
     movie3  x        x         x
     
     meta_ids are just ids of each movie
-    ....
     '''
 
     meta_ids, meta_matrix = zip(*metadata_rows)
