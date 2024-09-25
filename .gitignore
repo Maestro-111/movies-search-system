@@ -6,3 +6,4 @@ data
 *.model
 *.pkl
 movies_cache
+.DS_Store
