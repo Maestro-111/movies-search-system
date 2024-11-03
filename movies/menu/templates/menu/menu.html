@@ -19,7 +19,6 @@
         </form>
     </div>
 
-
     <div class="button-container">
         <form action="{% url 'playlist_menu' %}" method="get">
             <button type="submit">My Playlists</button>
@@ -32,5 +31,13 @@
         </form>
     </div>
 
-{% endblock %}
+    <div id="chat_bot_request-form">
+        <h4>Movie Search Assistant</h4>
+        <form action="{% url 'chat_bot_request' %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="chat_bot_request" placeholder="Type your movie request..."/>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
 
+{% endblock %}

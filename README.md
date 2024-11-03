@@ -141,7 +141,10 @@ exit()
 1. Tweak the final equation with rating (recommendations.py produce_recommendations func) 
 2. Updating Forum Section.
 3. Better front-end (?)
-
+4. Help user to search with indirect request
+5. Remove enter_query in movies
+6. Relocate css filee
+7. Define behaviour for chat bot
 
 
 
