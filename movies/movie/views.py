@@ -1,22 +1,24 @@
 from django.shortcuts import render,get_object_or_404
-from django.http import HttpResponse,HttpResponseNotFound,HttpResponseRedirect
+from django.http import HttpResponse,HttpResponseNotFound,HttpResponseRedirect,JsonResponse
 from .models import Movie
 from fuzzywuzzy import process
-from .models import Movie,MovieMetaData,Rating
+from .models import Movie,MovieMetaData,Rating,MovieEmbedding
 import numpy as np
 from numba import jit
 
 from django.core.cache import cache
+
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
 
 from recommendations import produce_recommendations
 from recommendations import get_text_vectors
 from recommendations import get_combined_features
 
 from django.conf import settings
-
+from django.views.decorators.csrf import csrf_exempt
 from gensim.models import Word2Vec
-
-import joblib
+from chroma_db import movies_collection,chroma_client
 
 import warnings
 
@@ -24,6 +26,50 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Create your views here.
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+
+@csrf_exempt
+def chat_bot_request(request):
+
+    if request.method == 'POST':
+
+        user_message = request.POST.get('chat_bot_request', '')
+        user_embedding = model.encode(user_message).tolist()
+
+        #
+        # results = movies_collection.query(
+        #     query_embeddings=[user_embedding],
+        #     n_results=5,
+        # )
+        #
+        # print(results)
+        #
+        # movies = [{"title": item["metadata"]["title"], "movie_id": item["metadata"]["movie_id"]} for item in
+        #           results["documents"][0]]
+        #
+        # return JsonResponse({"movies": movies})
+
+
+        # Step 2: Find movies with the most similar embeddings
+        movies = MovieEmbedding.objects.all()  # Retrieve all movies with embeddings
+        similarities = []
+
+        for movie_embedding in movies:
+            movie_vector = np.array(movie_embedding.embedding)
+            similarity_score = cosine_similarity([user_embedding], [movie_vector])[0][0]
+            similarities.append((movie_embedding.movie, similarity_score))
+
+        # Sort movies by similarity and get top matches
+        similarities.sort(key=lambda x: x[1], reverse=True)
+        top_movies = [movie for movie, _ in similarities[:5]]  # Get top 5 movies in similarity order
+
+        # Render the top movies in the template
+        return render(request, 'movie/search_movie.html', {'movies': top_movies})
+
+    return render(request, 'movie/search_movie.html')
+
 
 
 def enter_query(request):

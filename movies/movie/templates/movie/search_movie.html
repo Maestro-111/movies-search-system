@@ -26,9 +26,20 @@
         </ul>
     {% endif %}
 
+
     <nav>
         <p><a href="{% url 'main_menu' %}" class="bold-link">Return to the menu page</a></p>
     </nav>
+
+    <div id="chat_bot_request-form">
+        <h4>Movie Search Assistant</h4>
+        <form action="{% url 'chat_bot_request' %}" method="post">
+            {% csrf_token %}
+            <input type="text" name="chat_bot_request" placeholder="Type your movie request..."/>
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
 {% endblock %}
 
 

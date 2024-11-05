@@ -3,6 +3,7 @@ from django.urls import reverse
 import pandas as pd
 from django.conf import settings
 from django.contrib.auth.models import User
+import json
 
 class Movie(models.Model):
 
@@ -65,6 +66,12 @@ for column_name, dtype in df.dtypes.items():
 # Create the final Movie model
 class MovieMetaData(MovieMetaDataBase):
     movie = models.OneToOneField(Movie, on_delete=models.CASCADE, primary_key=True)
+
+
+class MovieEmbedding(models.Model):
+    movie = models.OneToOneField(Movie, on_delete=models.CASCADE)
+    embedding = models.JSONField(null=True, blank=True)
+
 
 class MovieGenres(models.Model):
 

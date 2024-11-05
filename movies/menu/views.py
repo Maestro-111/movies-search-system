@@ -28,15 +28,3 @@ def page_not_found(request, exception):
 
 
 
-@csrf_exempt
-def chat_bot_request(request):
-
-    if request.method == 'POST':
-        user_message = request.POST.get('chat_bot_request', '')
-
-        response_message = f"Searching for movies related to: {user_message}"
-        return JsonResponse({'response_message': response_message})
-
-    return render(request, 'menu/menu.html')
-
-

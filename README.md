@@ -27,6 +27,7 @@ SQLite is used to store it.
 3. Also, we are producing additional text features for our model with Word2Vec. train_embedding is the module to train Word2Vec on current movies' data.
 4. Finally, we concatenate the features and call cosine similarity measure for each movie pair. Then we sort by similarity measure and select top 10.
 5. We store recommendation in movies_cache folder (FileBasedCache).
+6. We also have a chatbot assistant to help users to find in natural help, not only by name.
 
 ## Project Set Up
 
@@ -90,6 +91,12 @@ venv\Scripts\activate
 cd movies
 ```
 
+Create embedding for the movies. App's going to use them later for requests in natural language
+
+```
+python generate_embeddings.py
+```
+
 Execute command:
 
 ```
@@ -141,10 +148,8 @@ exit()
 1. Tweak the final equation with rating (recommendations.py produce_recommendations func) 
 2. Updating Forum Section.
 3. Better front-end (?)
-4. Help user to search with indirect request
-5. Remove enter_query in movies
-6. Relocate css filee
-7. Define behaviour for chat bot
+4. Help user to search with indirect request (continue)
+5. Configure .env
 
 
 

@@ -8,36 +8,60 @@
     <h3>Search for popular movies within a few seconds!</h3>
 
     <div class="button-container">
-        <form action="{% url 'start_search' %}" method="get">
-            <button type="submit">Start Searching</button>
+        <form action="{% url 'start_search' %}" method="get" onsubmit="showLoading(this)">
+            <button type="submit" class="menu-button">Start Searching</button>
         </form>
     </div>
 
     <div class="button-container">
-        <form action="{% url 'user_home' %}" method="get">
-            <button type="submit">User Home</button>
+        <form action="{% url 'user_home' %}" method="get" onsubmit="showLoading(this)">
+            <button type="submit" class="menu-button">User Home</button>
         </form>
     </div>
 
     <div class="button-container">
-        <form action="{% url 'playlist_menu' %}" method="get">
-            <button type="submit">My Playlists</button>
+        <form action="{% url 'playlist_menu' %}" method="get" onsubmit="showLoading(this)">
+            <button type="submit" class="menu-button">My Playlists</button>
         </form>
     </div>
 
     <div class="button-container">
-        <form action="{% url 'forum_menu' %}" method="get">
-            <button type="submit">Forum</button>
+        <form action="{% url 'forum_menu' %}" method="get" onsubmit="showLoading(this)">
+            <button type="submit" class="menu-button">Forum</button>
         </form>
     </div>
 
-    <div id="chat_bot_request-form">
-        <h4>Movie Search Assistant</h4>
-        <form action="{% url 'chat_bot_request' %}" method="post">
-            {% csrf_token %}
-            <input type="text" name="chat_bot_request" placeholder="Type your movie request..."/>
-            <button type="submit">Submit</button>
-        </form>
+    <!-- Loading Spinner -->
+    <div id="loading-spinner" style="display: none;">
+        Loading, please wait...
     </div>
 
+    <script>
+        // Function to show loading spinner
+        function showLoading(form) {
+            document.getElementById("loading-spinner").style.display = "block";
+        }
+
+        // Add hover effect to buttons
+        document.querySelectorAll('.menu-button').forEach(button => {
+            button.addEventListener('mouseover', () => {
+                button.style.transform = "scale(1.05)";
+            });
+            button.addEventListener('mouseout', () => {
+                button.style.transform = "scale(1)";
+            });
+        });
+    </script>
+
+    <style>
+        .menu-button {
+            transition: transform 0.3s;
+        }
+
+        #loading-spinner {
+            font-size: 18px;
+            color: #555;
+            margin-top: 10px;
+        }
+    </style>
 {% endblock %}
