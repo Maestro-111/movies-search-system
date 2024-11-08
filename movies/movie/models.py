@@ -16,6 +16,7 @@ class Movie(models.Model):
     genres = models.ManyToManyField("MovieGenres",blank=True,related_name='genres')
     languages = models.ManyToManyField("MovieLanguages",blank=True,related_name='languages')
     ratings = models.ManyToManyField(User, through='Rating', related_name='rated_movies')
+    actors = models.ManyToManyField("Actors", through='MovieActor', related_name='actors', blank=True)
 
     def get_absolute_url(self):
         return reverse('show_movie', kwargs={'movie_id': self.movie_id})
@@ -67,11 +68,23 @@ for column_name, dtype in df.dtypes.items():
 class MovieMetaData(MovieMetaDataBase):
     movie = models.OneToOneField(Movie, on_delete=models.CASCADE, primary_key=True)
 
-
 class MovieEmbedding(models.Model):
     movie = models.OneToOneField(Movie, on_delete=models.CASCADE)
     embedding = models.JSONField(null=True, blank=True)
 
+class Actors(models.Model):
+    actor_name = models.CharField(max_length=255, null=True, blank=True)
+
+    def __str__(self):
+        return self.actor_name
+
+class MovieActor(models.Model):
+    movie = models.ForeignKey('Movie', on_delete=models.CASCADE)
+    actor = models.ForeignKey('Actors', on_delete=models.CASCADE)
+    character_name = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        unique_together = ('movie', 'actor')
 
 class MovieGenres(models.Model):
 

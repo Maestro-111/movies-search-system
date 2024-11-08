@@ -6,7 +6,8 @@ from populate_language import populate_language
 from populate_metadata import populate_metadata
 from populate_movie_languages import populate_movie_languages
 from populate_movie_genres import populate_movie_genres
-
+from populate_actors import populate_actors
+from populate_movies_actors import populate_movie_actors
 
 if __name__ == "__main__":
 
@@ -16,12 +17,15 @@ if __name__ == "__main__":
     metadata = populate_metadata()
     movie_languages = populate_movie_languages()
     movie_genres = populate_movie_genres()
+    actors = populate_actors()
+    movie_actors = populate_movie_actors()
 
     movies.run()
     metadata.run()
     genres.run()
     languages.run()
+    actors.run()
     movie_genres.run()
     movie_languages.run()
-
+    movie_actors.run()
 

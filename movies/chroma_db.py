@@ -1,10 +1,11 @@
-from chromadb import Client
-from chromadb.config import Settings
 import chromadb
+import os
+from chromadb.config import Settings
 
 
-chroma_client = chromadb.Client()
-movies_collection = chroma_client.create_collection(name="movies_embeddings",
-                                                    metadata={"hnsw:space": "cosine"}
-                                                    )
+persist_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../movies/movie"))
 
+
+chroma_client = chromadb.PersistentClient(path=persist_path,settings=Settings())
+movies_collection = chroma_client.get_or_create_collection(name="movies_embeddings",
+                                                           metadata={"hnsw:space": "cosine"})
