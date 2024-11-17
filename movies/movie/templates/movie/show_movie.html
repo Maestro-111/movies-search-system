@@ -20,6 +20,11 @@
                 {{ language }}{% if not forloop.last %}, {% endif %}
             {% endfor %}
         </p>
+        <p><strong>Actor/Roles:</strong>
+            {% for movie_actor in movie_actors %}
+                {{ movie_actor.actor.actor_name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>
     </section>
 
     {% if produce_recommendations %}

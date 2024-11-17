@@ -1,6 +1,6 @@
 from django.shortcuts import render,get_object_or_404
 from fuzzywuzzy import process
-from .models import Movie,MovieMetaData,Rating,MovieEmbedding
+from .models import Movie,MovieMetaData,Rating,MovieActor
 
 from django.core.cache import cache
 from sentence_transformers import SentenceTransformer
@@ -108,6 +108,17 @@ def show_movie(request, movie_id):
     languages = movie.languages.all()
     language_in_movie = languages.values_list('language', flat=True)
 
+    movie_actors = MovieActor.objects.filter(movie=movie).select_related('actor')
+
+    actors = [movie_actor.actor.actor_name for movie_actor in movie_actors]
+    characters = [movie_actor.character_name for movie_actor in movie_actors]
+
+    print("!")
+    print(movie_actors)
+    print(actors)
+    print(characters)
+    print("!")
+
     if not recommended_ids:
 
         print(movie)
@@ -146,7 +157,8 @@ def show_movie(request, movie_id):
         'movie':movie,
         'produce_recommendations':recommended_movies,
         'spoken_languages':language_in_movie,
-        'genres':genres_in_movie
+        'genres':genres_in_movie,
+        "movie_actors":movie_actors
     }
 
     return render(request,'movie/show_movie.html',context)

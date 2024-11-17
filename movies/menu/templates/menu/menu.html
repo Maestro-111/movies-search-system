@@ -5,6 +5,7 @@
 {% block header %}Welcome to the Menu Page{% endblock %}
 
 {% block content %}
+    {% load static %}
     <h3>Search for popular movies within a few seconds!</h3>
 
     <div class="button-container">
@@ -36,32 +37,5 @@
         Loading, please wait...
     </div>
 
-    <script>
-        // Function to show loading spinner
-        function showLoading(form) {
-            document.getElementById("loading-spinner").style.display = "block";
-        }
-
-        // Add hover effect to buttons
-        document.querySelectorAll('.menu-button').forEach(button => {
-            button.addEventListener('mouseover', () => {
-                button.style.transform = "scale(1.05)";
-            });
-            button.addEventListener('mouseout', () => {
-                button.style.transform = "scale(1)";
-            });
-        });
-    </script>
-
-    <style>
-        .menu-button {
-            transition: transform 0.3s;
-        }
-
-        #loading-spinner {
-            font-size: 18px;
-            color: #555;
-            margin-top: 10px;
-        }
-    </style>
+    <script src="{% static 'menu/javascript/spinner.js' %}"></script>
 {% endblock %}

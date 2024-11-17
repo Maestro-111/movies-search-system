@@ -29,7 +29,7 @@ def generate_and_save_embeddings():
         charaters = ", ".join([movie_actor.character_name or "Unknown Character" for movie_actor in movie_actors])
 
         text = (
-            f"{movie.original_title or 'Unknown Title'}, a {', '.join([genre.genre for genre in movie.genres.all()])} movie "
+            f"{movie.original_title}, a {', '.join([genre.genre for genre in movie.genres.all()])} movie "
             f"in {', '.join([language.language for language in movie.languages.all()])} from {movie.year or 'an unknown year'}. "
             f"Actors: {actors}. "
             f"Characters: {charaters}. "
@@ -47,6 +47,7 @@ def generate_and_save_embeddings():
         print(f"Added embedding for movie: {movie.original_title}")
         print(text)
         print()
+
 
 
 if __name__ == "__main__":

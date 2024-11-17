@@ -148,7 +148,7 @@ exit()
 1. Tweak the final equation with rating (recommendations.py produce_recommendations func) 
 2. Updating Forum Section.
 3. Better front-end (?)
-4. Help user to search with indirect request (continue)
+4. Resolve issue with wrong movie ids for actors information
 5. Configure .env
 
 
