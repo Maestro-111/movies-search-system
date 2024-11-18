@@ -1,0 +1,17 @@
+# Ignore the database file
+movies/*.sqlite3
+
+# Ignore Python cache directories
+movies/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore cache and temporary files
+movies/movies_cache/
+*.log
+
+# Ignore any other unnecessary files
+node_modules/
+.env
+
