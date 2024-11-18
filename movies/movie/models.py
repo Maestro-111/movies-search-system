@@ -68,17 +68,15 @@ for column_name, dtype in df.dtypes.items():
 class MovieMetaData(MovieMetaDataBase):
     movie = models.OneToOneField(Movie, on_delete=models.CASCADE, primary_key=True)
 
-class MovieEmbedding(models.Model):
-    movie = models.OneToOneField(Movie, on_delete=models.CASCADE)
-    embedding = models.JSONField(null=True, blank=True)
-
 class Actors(models.Model):
+
     actor_name = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return self.actor_name
 
 class MovieActor(models.Model):
+
     movie = models.ForeignKey('Movie', on_delete=models.CASCADE)
     actor = models.ForeignKey('Actors', on_delete=models.CASCADE)
     character_name = models.CharField(max_length=255, null=True, blank=True)

@@ -24,7 +24,7 @@ if __name__ == "__main__":
     # metadata.run()
     # genres.run()
     # languages.run()
-    actors.run()
+    # actors.run()
     # movie_genres.run()
     # movie_languages.run()
     movie_actors.run()

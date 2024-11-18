@@ -5,12 +5,17 @@
 {% block header %}Search for a Movie{% endblock %}
 
 {% block content %}
-
+    {% load static %}
     <form method="GET" action="{% url 'movie_search' %}">
         <label for="query">Movie Title:</label>
         <input type="text" id="query" name="query" placeholder="Enter movie title" required>
         <button type="submit">Search</button>
     </form>
+
+    <!-- Loading indicator -->
+    <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+        <p>Loading...</p>
+    </div>
 
     {% if movies %}
         <h2>Search Results:</h2>
@@ -26,7 +31,6 @@
         </ul>
     {% endif %}
 
-
     <nav>
         <p><a href="{% url 'main_menu' %}" class="bold-link">Return to the menu page</a></p>
     </nav>
@@ -40,6 +44,7 @@
         </form>
     </div>
 
+    <script src="{% static 'movie/javascript/loading_indicator.js' %}"></script>
 {% endblock %}
 
 

@@ -6,7 +6,7 @@ django.setup()
 
 from sentence_transformers import SentenceTransformer
 from movie.models import Movie, MovieActor
-from chroma_db import movies_collection,chroma_client
+from chroma_db import movies_collection
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
