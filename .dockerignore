@@ -1,17 +1,16 @@
-# Ignore the database file
-movies/*.sqlite3
+movies/movie/94e3a747-26a5-4b50-a7b4-86bedf53b1c8/*
+movies/movie/chroma.sqlite3
+movies/db.sqlite3
 
-# Ignore Python cache directories
-movies/__pycache__/
+*.bin
+*.pickle
+*.sqlite3
+
+# Ignore Python cache and other temporary files
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Ignore cache and temporary files
-movies/movies_cache/
-*.log
-
-# Ignore any other unnecessary files
-node_modules/
-.env
-
+# Exclude movies_cache
+movies_cache/

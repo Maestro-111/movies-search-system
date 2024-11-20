@@ -70,6 +70,7 @@ pandas==2.2.2
 pillow==11.0.0
 posthog==3.7.0
 protobuf==5.28.3
+psycopg2-binary==2.9.10
 pyasn1==0.6.1
 pyasn1_modules==0.4.1
 pybind11==2.12.0

@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,84 +23,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 Hard coding features (columns) used in cosine sim 
 '''
 
-GENERAL = ["budget", "popularity", "year", "revenue", "runtime", "vote_average"]
 
-GENRES = ['Foreign', 'Telescene Film Group Productions', 'Aniplex', 'Music', 'Comedy', 'Animation', 'Action', 'TV Movie', 'Sentai Filmworks',
-        'Rogue State', 'Drama', 'Carousel Productions', 'Fantasy', 'Documentary',
-        'Romance', 'Western', 'Odyssey Media', 'War', 'Vision View Entertainment', 'Mystery', 'The Cartel', 'Mardock Scramble Production Committee', 'Horror',
-        'Thriller', 'GoHands', 'Family', 'Science Fiction', 'Adventure', 'Crime', 'History', 'BROSTA TV', 'Pulser Productions']
-
-SPOKEN_LANGUAGES = ['Fulfulde',
-                     'Czech',
-                     'Bosnian',
-                     'Norwegian',
-                     'Latvian',
-                     'French',
-                     'Cantonese',
-                     'Wolof',
-                     'Pashto',
-                     'Portuguese',
-                     'Georgian',
-                     'Punjabi',
-                     'Malay',
-                     'Azerbaijani',
-                     'Slovak',
-                     'Bambara',
-                     'Afrikaans',
-                     'Somali',
-                     'Esperanto',
-                     'Polish',
-                     'English',
-                     'Zulu',
-                     'Arabic',
-                     'Hebrew',
-                     'Hindi',
-                     'Catalan',
-                     'Hausa',
-                     'Italian',
-                     'Slovenian',
-                     'Albanian',
-                     'Telugu',
-                     'Swedish',
-                     'Greek',
-                     'Bengali',
-                     'Estonian',
-                     'Persian',
-                     'Turkish',
-                     'Romanian',
-                     'Hungarian',
-                     'Thai',
-                     'Basque',
-                     'Urdu',
-                     'Icelandic',
-                     'Japanese',
-                     'Uzbek',
-                     'Maltese',
-                     'Vietnamese',
-                     'German',
-                     'Croatian',
-                     'Russian',
-                     'Serbian',
-                     'Finnish',
-                     'Kinyarwanda',
-                     'Irish',
-                     'Spanish',
-                     'Lithuanian',
-                     'Korean',
-                     'Latin',
-                     'Tamil',
-                     'Bulgarian',
-                     'Norwegian Bokmål',
-                     'Swahili',
-                     'Dutch',
-                     'Danish',
-                     'Galician',
-                     'Welsh',
-                     'Belarusian',
-                     'Ukrainian',
-                     'Mandarin',
-                     'Kazakh',
-                     'Indonesian']
+GENERAL = os.getenv("GENERAL").split(",")
+GENRES = os.getenv("GENRES").split(",")
+SPOKEN_LANGUAGES = os.getenv("SPOKEN_LANGUAGES").split(",")
 
 
 FEATURES = GENERAL+GENRES+SPOKEN_LANGUAGES
@@ -175,10 +104,28 @@ WSGI_APPLICATION = 'movies.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+db_name = os.getenv("db_name")
+db_user_name = os.getenv("db_user_name")
+db_psw = os.getenv("db_psw")
+db_host = os.getenv("db_host")
+db_port = os.getenv("db_port")
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': db_name,
+        'USER': db_user_name,
+        'PASSWORD': db_psw,
+        'HOST': db_host,  # '127.0.0.1' or your server's IP
+        'PORT': db_port,       # Default PostgreSQL port
     }
 }
 

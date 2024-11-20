@@ -11,6 +11,7 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 RUN python -m nltk.downloader punkt
 
+
 # Copy the rest of the project files
 COPY movies /app/movies
 COPY populate_database /app/populate_database

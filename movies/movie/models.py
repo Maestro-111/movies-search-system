@@ -8,10 +8,10 @@ import json
 class Movie(models.Model):
 
     movie_id = models.IntegerField(primary_key=True)
-    original_title = models.CharField(max_length=255, null=True, blank=True)
+    original_title = models.CharField(max_length=512, null=True, blank=True)
     overview = models.TextField(null=True, blank=True)
-    slug = models.SlugField(max_length=255, db_index=True, blank=True, default='')
-    tagline = models.CharField(max_length=255, blank=True,null=True)
+    slug = models.SlugField(max_length=512, db_index=True, blank=True, default='')
+    tagline = models.CharField(max_length=512, blank=True,null=True)
     year = models.IntegerField(blank=True,null=True)
     genres = models.ManyToManyField("MovieGenres",blank=True,related_name='genres')
     languages = models.ManyToManyField("MovieLanguages",blank=True,related_name='languages')
@@ -52,7 +52,7 @@ def get_django_field_type(dtype):
     elif pd.api.types.is_bool_dtype(dtype):
         return models.BooleanField(default=False)
     else:
-        return models.CharField(max_length=255, default='')
+        return models.CharField(max_length=512, default='')
 
 # Create MovieBase class
 class MovieMetaDataBase(models.Model):
@@ -70,7 +70,7 @@ class MovieMetaData(MovieMetaDataBase):
 
 class Actors(models.Model):
 
-    actor_name = models.CharField(max_length=255, null=True, blank=True)
+    actor_name = models.CharField(max_length=512, null=True, blank=True)
 
     def __str__(self):
         return self.actor_name
@@ -79,7 +79,7 @@ class MovieActor(models.Model):
 
     movie = models.ForeignKey('Movie', on_delete=models.CASCADE)
     actor = models.ForeignKey('Actors', on_delete=models.CASCADE)
-    character_name = models.CharField(max_length=255, null=True, blank=True)
+    character_name = models.CharField(max_length=512, null=True, blank=True)
 
     class Meta:
         unique_together = ('movie', 'actor')
@@ -87,7 +87,7 @@ class MovieActor(models.Model):
 class MovieGenres(models.Model):
 
     genre_id = models.IntegerField(primary_key=True)
-    genre = models.CharField(max_length=255)
+    genre = models.CharField(max_length=512)
 
 
     class Meta:
@@ -101,7 +101,7 @@ class MovieGenres(models.Model):
 class MovieLanguages(models.Model):
 
     language_id = models.IntegerField(primary_key=True)
-    language = models.CharField(max_length=255)
+    language = models.CharField(max_length=512)
 
 
     class Meta:

@@ -16,9 +16,6 @@ from recommendations import get_text_vectors
 from recommendations import get_combined_features
 
 from gensim.models import Word2Vec
-
-import joblib
-
 import random
 
 # Create your views here.
