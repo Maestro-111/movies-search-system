@@ -145,11 +145,9 @@ exit()
 
 ## TO DO
 
-1. Tweak the final equation with rating (recommendations.py produce_recommendations func) 
-2. Updating Forum Section.
-3. Better front-end (?)
-4. Resolve issue with wrong movie ids for actors information
-5. Configure .env
+1. Updating Forum Section.
+2. Better front-end (cont)
+3. Update Scripts to populate sql (from sqlite to postgress).
 
 
 
