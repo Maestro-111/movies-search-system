@@ -1,21 +1,23 @@
+
+from populate_mixin import populate_mixin
+import psycopg2
 import pandas as pd
-import sqlite3
-from pathlib import Path
 
-
-
-class populate_movie_actors:
-
-    BASE_DIR = Path(__file__).resolve().parent.parent
+class populate_movie_actors(populate_mixin):
 
     def __init__(self):
-
-        self.database_path = self.BASE_DIR / "movies" / "db.sqlite3"
-        self.df_path = self.BASE_DIR / "movies" / "data" / "movie_actors.xlsx"
+        super().__init__("movie_actors")
 
     def run(self):
 
-        conn = sqlite3.connect(self.database_path)
+        conn = psycopg2.connect(
+            dbname=self.db_name,
+            user=self.db_user,
+            password=self.db_password,
+            host=self.db_host,
+            port=self.db_port,
+        )
+
         df = pd.read_excel(self.df_path, index_col=0)
 
         cursor = conn.cursor()
@@ -31,11 +33,12 @@ class populate_movie_actors:
 
             rows += 1
 
-            cursor.execute("SELECT 1 FROM movie_movie WHERE movie_id = ?", (movie_id,))
+            # Use %s for placeholders in PostgreSQL
+            cursor.execute("SELECT 1 FROM movie_movie WHERE movie_id = %s", (movie_id,))
             movie_exists = cursor.fetchone()
 
             if movie_exists:
-                cursor.execute("SELECT id FROM movie_actors WHERE actor_name = ?", (actor_name,))
+                cursor.execute("SELECT id FROM movie_actors WHERE actor_name = %s", (actor_name,))
                 result = cursor.fetchone()
 
                 if result:
@@ -43,14 +46,14 @@ class populate_movie_actors:
 
                     # Check if the combination of movie_id and actor_id already exists
                     cursor.execute(
-                        "SELECT 1 FROM movie_movieactor WHERE movie_id = ? AND actor_id = ?",
+                        "SELECT 1 FROM movie_movieactor WHERE movie_id = %s AND actor_id = %s",
                         (movie_id, actor_id)
                     )
                     existing_entry = cursor.fetchone()
 
                     if not existing_entry:
                         # Insert into movie_movieactor table if not already present
-                        statement = "INSERT INTO movie_movieactor (movie_id, actor_id, character_name) VALUES (?, ?, ?);"
+                        statement = "INSERT INTO movie_movieactor (movie_id, actor_id, character_name) VALUES (%s, %s, %s);"
                         try:
                             cursor.execute(statement, (movie_id, actor_id, character_name))
                             # Print progress
@@ -71,3 +74,4 @@ class populate_movie_actors:
 
         # Final summary
         print(f"Total rows added: {rows} out of {total_rows}")
+

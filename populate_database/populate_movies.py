@@ -1,21 +1,25 @@
 
+
+from populate_mixin import populate_mixin
+import psycopg2
 import pandas as pd
-import sqlite3
-from pathlib import Path
 
-class populate_movies:
-
-    BASE_DIR = Path(__file__).resolve().parent.parent
+class populate_movies(populate_mixin):
 
     def __init__(self):
 
-
-        self.database_path = self.BASE_DIR / "movies" / "db.sqlite3"
-        self.df_path = self.BASE_DIR / "movies" / "data" / "movies.xlsx"
+        super().__init__("movies")
 
     def run(self):
 
-        conn = sqlite3.connect(self.database_path)
+        conn = psycopg2.connect(
+            dbname=self.db_name,
+            user=self.db_user,
+            password=self.db_password,
+            host=self.db_host,
+            port=self.db_port,
+        )
+
         df = pd.read_excel(self.df_path, index_col=0)
 
         cursor = conn.cursor()

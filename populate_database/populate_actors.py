@@ -1,51 +1,57 @@
 import pandas as pd
 import sqlite3
 from pathlib import Path
+import psycopg2
+from dotenv import load_dotenv, find_dotenv
+import os
+from populate_mixin import populate_mixin
+
+load_dotenv(find_dotenv())
 
 
-
-class populate_actors:
-
-    BASE_DIR = Path(__file__).resolve().parent.parent
+class populate_actors(populate_mixin):
 
     def __init__(self):
-
-        self.database_path = self.BASE_DIR / "movies" / "db.sqlite3"
-        self.df_path = self.BASE_DIR / "movies" / "data" / "movie_actors.xlsx"
+        super().__init__("movie_actors")
 
 
     def run(self):
-
-        conn = sqlite3.connect(self.database_path)
+        # Connect to PostgreSQL
+        conn = psycopg2.connect(
+            dbname=self.db_name,
+            user=self.db_user,
+            password=self.db_password,
+            host=self.db_host,
+            port=self.db_port,
+        )
         df = pd.read_excel(self.df_path, index_col=0)
 
+        # Extract unique actors
         df = df[["actors"]].drop_duplicates()
         cursor = conn.cursor()
 
         for row in df.itertuples(index=False):
-
             count = len(row)
-            parsed_vales = ""
+            parsed_values = ""
 
             for value in row:
-
                 if count == 1:
                     if isinstance(value, str):
                         value = value.replace("'", "")
-                        parsed_vales += (f"'{value}'")
+                        parsed_values += (f"'{value}'")
                     else:
-                        parsed_vales += (str(value))
+                        parsed_values += (str(value))
                 else:
                     if isinstance(value, str):
                         value = value.replace("'", "")
-                        parsed_vales += (f"'{value}'" + ', ')
+                        parsed_values += (f"'{value}', ")
                     else:
-                        parsed_vales += (str(value) + ', ')
+                        parsed_values += (str(value) + ", ")
 
                 count -= 1
 
             statement = f"INSERT INTO movie_actors (actor_name)" \
-                        f" VALUES ({parsed_vales});"
+                        f" VALUES ({parsed_values});"
 
             print(statement)
 
@@ -53,6 +59,7 @@ class populate_actors:
                 cursor.execute(statement)
             except Exception as e:
                 print(e)
+                conn.rollback()  # Rollback in case of an error
                 exit(1)
 
         # Commit changes

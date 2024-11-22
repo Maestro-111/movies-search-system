@@ -12,9 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
-load_dotenv()
+load_dotenv(find_dotenv())
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -104,7 +104,7 @@ WSGI_APPLICATION = 'movies.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-
+#
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.sqlite3',
@@ -124,8 +124,8 @@ DATABASES = {
         'NAME': db_name,
         'USER': db_user_name,
         'PASSWORD': db_psw,
-        'HOST': db_host,  # '127.0.0.1' or your server's IP
-        'PORT': db_port,       # Default PostgreSQL port
+        'HOST': db_host,
+        'PORT': db_port,
     }
 }
 

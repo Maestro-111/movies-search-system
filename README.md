@@ -106,48 +106,36 @@ python manage.py runserver
 
 ## Docker Set up
 
-1) Create an image:
+1) Create a dokcer compose:
 
 ```
-docker build -t my-django-app .
+docker compose build
+docker compose up
 ```
 
-2) Run container 
-
-```
-docker run -p 8000:8000 my-django-app
-```
-
-3) Get id of your container 
-
-```
-dokcer ps 
-```
-
-4) start a shell session in container
-
-```
-docker exec -it <container_id> /bin/bash
-```
-
-5) run migrations and populate database script
+2) Run migrations from web container 
 
 ```
 cd movies
 python manage.py makemigrations
 python manage.py migrate
+```
+
+3) Populate Postgres (this will take a while...)
+
+```
 cd ..
-cd populate_database
+cd populate_databse
 python main.py
-exit()
+
 ```
 
 
 ## TO DO
 
 1. Updating Forum Section.
-2. Better front-end (cont)
-3. Update Scripts to populate sql (from sqlite to postgress).
+2. front-end (cont)
+3. Fix .dokcerignore issue (e.g. not ignoreing sqlite files)
 
 
 
