@@ -1,0 +1,33 @@
+repos:
+  # Use Black for code formatting
+  - repo: https://github.com/psf/black
+    rev: 23.9.1  # Replace with the latest stable version
+    hooks:
+      - id: black
+        args: ["--line-length", "300"]  # Set max line length (default is 88)
+
+  # Use Flake8 for linting
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0  # Replace with the latest stable version
+    hooks:
+      - id: flake8
+        args: ["--max-line-length", "300"]  # Set max line length (default is 79)
+
+  # Check for trailing whitespaces
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+
+  # Check YAML syntax
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: check-yaml
+
+  # Check for Debug statements
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+      - id: debug-statements

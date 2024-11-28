@@ -5,3 +5,84 @@
     font-size: 16px;
     color: #555;
 }
+
+/* Style for the entire search container */
+.search-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+}
+
+/* Flex container for alignment */
+.form-row {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Adds spacing between elements */
+    margin-bottom: 20px;
+}
+
+/* Search input container styling */
+.search-input-container {
+    flex-grow: 1; /* Ensures the input field takes up available space */
+}
+
+.search-input-container input {
+    width: 100%; /* Ensures the input field stretches fully */
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+}
+
+/* Upload container styling */
+.upload-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.upload-icon {
+    width: 50px;
+    height: 50px;
+    border: 2px dashed #007bff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #eef7ff;
+    cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+.upload-icon img {
+    width: 24px;
+    height: 24px;
+}
+
+.upload-icon:hover {
+    background-color: #d6ebff;
+    border-color: #0056b3;
+}
+
+/* Submit button styling */
+.search-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.search-btn:hover {
+    background-color: #0056b3;
+}

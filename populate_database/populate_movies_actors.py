@@ -1,15 +1,13 @@
-
 from populate_mixin import populate_mixin
 import psycopg2
 import pandas as pd
 
-class populate_movie_actors(populate_mixin):
 
+class populate_movie_actors(populate_mixin):
     def __init__(self):
         super().__init__("movie_actors")
 
     def run(self):
-
         conn = psycopg2.connect(
             dbname=self.db_name,
             user=self.db_user,
@@ -26,7 +24,6 @@ class populate_movie_actors(populate_mixin):
         rows = 0
 
         for index, row in enumerate(df.itertuples(index=False), start=1):
-
             movie_id = row.movie_id
             actor_name = row.actors.replace("'", "") if isinstance(row.actors, str) else None
             character_name = row.charaters.replace("'", "") if isinstance(row.charaters, str) else None
@@ -47,7 +44,7 @@ class populate_movie_actors(populate_mixin):
                     # Check if the combination of movie_id and actor_id already exists
                     cursor.execute(
                         "SELECT 1 FROM movie_movieactor WHERE movie_id = %s AND actor_id = %s",
-                        (movie_id, actor_id)
+                        (movie_id, actor_id),
                     )
                     existing_entry = cursor.fetchone()
 
@@ -74,4 +71,3 @@ class populate_movie_actors(populate_mixin):
 
         # Final summary
         print(f"Total rows added: {rows} out of {total_rows}")
-

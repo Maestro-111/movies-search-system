@@ -1,5 +1,3 @@
-import os
-
 from populate_genres import populate_genres
 from populate_movies import populate_movies
 from populate_language import populate_language
@@ -10,7 +8,6 @@ from populate_actors import populate_actors
 from populate_movies_actors import populate_movie_actors
 
 if __name__ == "__main__":
-
     genres = populate_genres()
     movies = populate_movies()
     languages = populate_language()
