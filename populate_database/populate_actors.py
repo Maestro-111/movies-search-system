@@ -1,19 +1,14 @@
 import pandas as pd
-import sqlite3
-from pathlib import Path
 import psycopg2
 from dotenv import load_dotenv, find_dotenv
-import os
 from populate_mixin import populate_mixin
 
 load_dotenv(find_dotenv())
 
 
 class populate_actors(populate_mixin):
-
     def __init__(self):
         super().__init__("movie_actors")
-
 
     def run(self):
         # Connect to PostgreSQL
@@ -38,20 +33,19 @@ class populate_actors(populate_mixin):
                 if count == 1:
                     if isinstance(value, str):
                         value = value.replace("'", "")
-                        parsed_values += (f"'{value}'")
+                        parsed_values += f"'{value}'"
                     else:
-                        parsed_values += (str(value))
+                        parsed_values += str(value)
                 else:
                     if isinstance(value, str):
                         value = value.replace("'", "")
-                        parsed_values += (f"'{value}', ")
+                        parsed_values += f"'{value}', "
                     else:
-                        parsed_values += (str(value) + ", ")
+                        parsed_values += str(value) + ", "
 
                 count -= 1
 
-            statement = f"INSERT INTO movie_actors (actor_name)" \
-                        f" VALUES ({parsed_values});"
+            statement = f"INSERT INTO movie_actors (actor_name)" f" VALUES ({parsed_values});"
 
             print(statement)
 

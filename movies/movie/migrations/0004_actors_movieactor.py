@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("movie", "0003_movieembedding"),
     ]
@@ -44,15 +43,11 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "actor",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="movie.actors"
-                    ),
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="movie.actors"),
                 ),
                 (
                     "movie",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, to="movie.movie"
-                    ),
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="movie.movie"),
                 ),
             ],
             options={

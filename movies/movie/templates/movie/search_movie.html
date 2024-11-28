@@ -5,12 +5,44 @@
 {% block header %}Search for a Movie{% endblock %}
 
 {% block content %}
+
     {% load static %}
-    <form method="GET" action="{% url 'movie_search' %}">
-        <label for="query">Movie Title:</label>
-        <input type="text" id="query" name="query" placeholder="Enter movie title" required>
-        <button type="submit">Search</button>
+
+<div class="search-container">
+    <form method="POST" action="{% url 'movie_search' %}" enctype="multipart/form-data">
+
+        {% csrf_token %}
+
+        <div class="form-row">
+            <!-- Input for movie name -->
+            <div class="search-input-container">
+                <label for="query">Enter Movie Name:</label>
+                <input type="text" id="query" name="query" placeholder="Enter movie name">
+            </div>
+
+            <!-- Image upload container -->
+            <div class="upload-container">
+                <label for="image" class="upload-label">
+                    <div class="upload-icon">
+                        <img src="{% static 'movie/icons/upload-icon.svg' %}" alt="Upload" style="width: 50px; height: 50px;">
+                    </div>
+                </label>
+                <input type="file" id="image" name="image" accept="image/*" hidden>
+            </div>
+        </div>
+
+        <!-- Submit button -->
+        <button type="submit" class="search-btn">Search</button>
     </form>
+</div>
+
+    <!-- Error message display -->
+    {% if error %}
+        <div class="error-message" style="color: red; margin-top: 20px;">
+            <strong>Error:</strong> {{ error }}
+        </div>
+    {% endif %}
+
 
     <!-- Loading indicator -->
     <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
@@ -46,5 +78,3 @@
 
     <script src="{% static 'movie/javascript/loading_indicator.js' %}"></script>
 {% endblock %}
-
-

@@ -2,9 +2,9 @@
 
 ## Abstract
 This is a Django web app that allows user searching for their favorite movies.
-Also, for each movie system will provide up to 10 recommendations. 
+Also, for each movie system will provide up to 10 recommendations.
 
-Also, users can create their playlist and based on movies in playlist they will get up to 10 recommendations. 
+Also, users can create their playlist and based on movies in playlist they will get up to 10 recommendations.
 
 Right now database, which is SQLite, contains around 25k movies.
 
@@ -18,7 +18,7 @@ We used movies data from Kaggle:
 https://www.kaggle.com/datasets/rounakbanik/the-movies-dataset
 ```
 
-SQLite is used to store it. 
+SQLite is used to store it.
 
 ## Methodology
 
@@ -50,7 +50,7 @@ We need to create tables first. You'll need to:
 ```
 python -m venv venv
 venv\Scripts\activate
-pip install -r requirements.txt 
+pip install -r requirements.txt
 cd movies
 ```
 
@@ -113,7 +113,7 @@ docker compose build
 docker compose up
 ```
 
-2) Run migrations from web container 
+2) Run migrations from web container
 
 ```
 cd movies
@@ -136,11 +136,3 @@ python main.py
 1. Updating Forum Section.
 2. front-end (cont)
 3. Fix .dokcerignore issue (e.g. not ignoreing sqlite files)
-
-
-
-
-
-
-
-

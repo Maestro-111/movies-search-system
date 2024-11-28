@@ -1,17 +1,13 @@
-
 import pandas as pd
-import sqlite3
-from pathlib import Path
 from populate_mixin import populate_mixin
 import psycopg2
 
-class populate_genres(populate_mixin):
 
+class populate_genres(populate_mixin):
     def __init__(self):
         super().__init__("genres")
 
     def run(self):
-
         conn = psycopg2.connect(
             dbname=self.db_name,
             user=self.db_user,
@@ -25,29 +21,26 @@ class populate_genres(populate_mixin):
         cursor = conn.cursor()
 
         for row in df.itertuples(index=False):
-
             count = len(row)
             parsed_vales = ""
 
             for value in row:
-
                 if count == 1:
                     if isinstance(value, str):
                         value = value.replace("'", "")
-                        parsed_vales += (f"'{value}'")
+                        parsed_vales += f"'{value}'"
                     else:
-                        parsed_vales += (str(value))
+                        parsed_vales += str(value)
                 else:
                     if isinstance(value, str):
                         value = value.replace("'", "")
-                        parsed_vales += (f"'{value}'" + ', ')
+                        parsed_vales += f"'{value}'" + ", "
                     else:
-                        parsed_vales += (str(value) + ', ')
+                        parsed_vales += str(value) + ", "
 
                 count -= 1
 
-            statement = f"INSERT INTO movie_moviegenres (genre,genre_id)" \
-                        f" VALUES ({parsed_vales});"
+            statement = f"INSERT INTO movie_moviegenres (genre,genre_id)" f" VALUES ({parsed_vales});"
 
             print(statement)
 
@@ -60,4 +53,3 @@ class populate_genres(populate_mixin):
         # Commit changes
         conn.commit()
         conn.close()
-

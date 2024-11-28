@@ -6,28 +6,48 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('movie', '0001_initial'),
+        ("movie", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Rating',
+            name="Rating",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('rating', models.PositiveSmallIntegerField()),
-                ('movie', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='movie.movie')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("rating", models.PositiveSmallIntegerField()),
+                (
+                    "movie",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="movie.movie"),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('user', 'movie')},
+                "unique_together": {("user", "movie")},
             },
         ),
         migrations.AddField(
-            model_name='movie',
-            name='ratings',
-            field=models.ManyToManyField(related_name='rated_movies', through='movie.Rating', to=settings.AUTH_USER_MODEL),
+            model_name="movie",
+            name="ratings",
+            field=models.ManyToManyField(
+                related_name="rated_movies",
+                through="movie.Rating",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
     ]

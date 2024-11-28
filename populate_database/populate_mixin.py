@@ -1,12 +1,11 @@
 from pathlib import Path
 import os
 
-class populate_mixin:
 
+class populate_mixin:
     BASE_DIR = Path(__file__).resolve().parent.parent
 
     def __init__(self, excel_name):
-
         self.db_name = os.getenv("db_name")
         self.db_user = os.getenv("db_user_name")
         self.db_password = os.getenv("db_psw")

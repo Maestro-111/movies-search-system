@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("movie", "0002_rating_movie_ratings"),
     ]
@@ -26,9 +25,7 @@ class Migration(migrations.Migration):
                 ("embedding", models.JSONField(blank=True, null=True)),
                 (
                     "movie",
-                    models.OneToOneField(
-                        on_delete=django.db.models.deletion.CASCADE, to="movie.movie"
-                    ),
+                    models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to="movie.movie"),
                 ),
             ],
         ),
