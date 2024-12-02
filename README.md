@@ -8,7 +8,7 @@ Also, users can create their playlist and based on movies in playlist they will 
 
 Right now database, which is Posters, contains around 25k movies and related information.
 
-<img width="1300" alt="teaser" src="./figure/sample.png">
+<img width="1300" alt="teaser" src="./figure/sample.PNG">
 
 ## Data
 
