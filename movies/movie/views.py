@@ -2,6 +2,8 @@ from django.shortcuts import render
 from fuzzywuzzy import process
 from .models import Movie, MovieMetaData, Rating, MovieActor
 
+from django.db.models import Q
+
 from django.core.cache import cache
 from sentence_transformers import SentenceTransformer
 
@@ -19,7 +21,6 @@ from PIL import Image, UnidentifiedImageError
 
 import warnings
 import re
-
 
 # Ignore all warnings
 warnings.filterwarnings("ignore")
@@ -73,8 +74,8 @@ def movie_search(request):
         movie_titles = [movie.original_title for movie in all_movies]
 
         # Get best matches using fuzzywuzzy
-        best_matches = process.extract(query, movie_titles, limit=10)
-        best_match_titles = [match[0] for match in best_matches if match[1] >= 90]  # Adjust threshold as needed
+        best_matches = process.extract(query, movie_titles, limit=20)
+        best_match_titles = [match[0] for match in best_matches if match[1] >= 90]
         title_to_score = {match[0]: match[1] for match in best_matches}
 
         movies = list(Movie.objects.filter(original_title__in=best_match_titles))
@@ -106,14 +107,28 @@ def movie_search(request):
 
             movie_names = results["ids"][0]
 
+            print(movie_names)
+
             movies = []
+
             for title in movie_names:
+                movie_name = re.findall(r"^(.*) \(\d+\)_\d+$", title)
+                year = re.findall(r"\((\d+)\)", title)
+
+                print(movie_name)
+                print(year)
+
                 try:
-                    title = re.findall(r"^[^_]+", title)[0]
-                    matching_movies = Movie.objects.filter(original_title=title)
+                    movie_name = re.findall(r"^(.*) \(\d+\)_\d+$", title)
+                    year = re.findall(r"\((\d+)\)", title)
+
+                    movie_name = movie_name[0].strip()
+                    year = int(year[0])
+
+                    matching_movies = Movie.objects.filter(Q(original_title__icontains=movie_name) & Q(year=year))
+
                     if matching_movies.exists():
-                        for movie in matching_movies:
-                            movies.append(movie)  # Add each Movie instance to the list
+                        movies.extend(list(matching_movies))
                     else:
                         print(f"No movies found with the title: {title}")
                 except Exception as e:
