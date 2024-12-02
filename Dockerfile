@@ -11,9 +11,6 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 RUN python -m nltk.downloader punkt
 
-RUN pyton /app/movies/generate_text_embeddings.py
-RUN pyton /app/movies/generate_image_embeddings.py
-
 COPY movies /apps/movies
 COPY populate_database /app/populate_database
 
