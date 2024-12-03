@@ -1,4 +1,4 @@
-# Search and Recommendation System
+# Movie Search and Recommendation System
 
 ## Abstract
 This is a Django web app that allows user searching for their favorite movies.
@@ -6,9 +6,9 @@ Also, for each movie system will provide up to 10 recommendations.
 
 Also, users can create their playlist and based on movies in playlist they will get up to 10 recommendations.
 
-Right now database, which is Posters, contains around 25k movies and related information.
+Right now database, which is PostgresSQL, contains around 25k movies and related information.
 
-<img width="1300" alt="teaser" src="./figure/sample.PNG">
+<img width="1300" alt="teaser" src="./figure/sample.png">
 
 ## Data
 
@@ -129,7 +129,7 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-3) Populate Postgres (this will take a while...)
+3) Populate PostgresSQL (this will take a while...)
 
 ```
 cd ..

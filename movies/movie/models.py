@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 
 
 class Movie(models.Model):
+
     movie_id = models.IntegerField(primary_key=True)
     original_title = models.CharField(max_length=512, null=True, blank=True)
     overview = models.TextField(null=True, blank=True)
@@ -16,6 +17,7 @@ class Movie(models.Model):
     languages = models.ManyToManyField("MovieLanguages", blank=True, related_name="languages")
     ratings = models.ManyToManyField(User, through="Rating", related_name="rated_movies")
     actors = models.ManyToManyField("Actors", through="MovieActor", related_name="actors", blank=True)
+    movie_url = models.URLField(max_length=2048, null=True, blank=True)
 
     def get_absolute_url(self):
         return reverse("show_movie", kwargs={"movie_id": self.movie_id})

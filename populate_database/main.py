@@ -8,6 +8,7 @@ from populate_actors import populate_actors
 from populate_movies_actors import populate_movie_actors
 
 if __name__ == "__main__":
+
     genres = populate_genres()
     movies = populate_movies()
     languages = populate_language()

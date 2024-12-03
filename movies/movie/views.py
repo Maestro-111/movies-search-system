@@ -22,10 +22,11 @@ from PIL import Image, UnidentifiedImageError
 import warnings
 import re
 
+from config.logger_config import logger
+
 # Ignore all warnings
 warnings.filterwarnings("ignore")
 model = SentenceTransformer("all-MiniLM-L6-v2")
-
 
 @csrf_exempt
 def chat_bot_request(request):
@@ -70,6 +71,7 @@ def movie_search(request):
     movies = None
 
     if query:
+
         all_movies = Movie.objects.all()
         movie_titles = [movie.original_title for movie in all_movies]
 
@@ -79,6 +81,8 @@ def movie_search(request):
         title_to_score = {match[0]: match[1] for match in best_matches}
 
         movies = list(Movie.objects.filter(original_title__in=best_match_titles))
+
+        logger.info(f"Displaying best matches {best_match_titles}: for {query}")
 
         for movie in movies:
             movie.score = title_to_score.get(movie.original_title, 0)

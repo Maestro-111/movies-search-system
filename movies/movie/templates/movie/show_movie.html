@@ -21,10 +21,17 @@
             {% endfor %}
         </p>
         <p><strong>Actor/Roles:</strong>
-            {% for movie_actor in movie_actors %}
+            {% for movie_actor in movie_actors|slice:":10" %}
                 {{ movie_actor.actor.actor_name }}{% if not forloop.last %}, {% endif %}
             {% endfor %}
         </p>
+        </p>
+        <p><strong>Poster:</strong></p>
+        {% if movie.movie_url %}
+            <img src="{{ movie.movie_url }}" alt="{{ movie.original_title }}" style="max-width: 300px; height: auto;">
+        {% else %}
+            <p>No poster available.</p>
+        {% endif %}
     </section>
 
     {% if produce_recommendations %}
