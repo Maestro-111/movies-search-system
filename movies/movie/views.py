@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from fuzzywuzzy import process
 from .models import Movie, MovieMetaData, Rating, MovieActor
 
 from django.db.models import Q
@@ -32,6 +31,7 @@ import json
 # Ignore all warnings
 warnings.filterwarnings("ignore")
 model = SentenceTransformer("all-MiniLM-L6-v2")
+
 
 @csrf_exempt
 def chat_bot_request(request):
@@ -76,7 +76,6 @@ def movie_search(request):
     movies = None
 
     if query:
-
         # all_movies = Movie.objects.all()
         # movie_titles = [movie.original_title for movie in all_movies]
         #
@@ -88,25 +87,24 @@ def movie_search(request):
         # movies = list(Movie.objects.filter(original_title__in=best_match_titles))
 
         relative_path = "config/languages.json"
-        file_path = os.path.join('/'.join(str(settings.BASE_DIR).split("/")[:-1]), relative_path)
+        file_path = os.path.join("/".join(str(settings.BASE_DIR).split("/")[:-1]), relative_path)
 
-        with open(file_path, 'r') as f:
+        with open(file_path, "r") as f:
             language_config = json.load(f)
 
         language = detect(query)
-        pg_config = language_config.get(language, 'english')  # Fallback to English if language is not found
+        pg_config = language_config.get(language, "english")  # Fallback to English if language is not found
 
         # Perform Full Text Search
         search_query = SearchQuery(query, config=pg_config)
-        search_vector = SearchVector('original_title', config=pg_config, weight='A')
+        search_vector = SearchVector("original_title", config=pg_config, weight="A")
 
         # Combine FTS with Trigram Similarity
-        movies = Movie.objects.annotate(
-            rank=SearchRank(search_vector, search_query),
-            similarity=TrigramSimilarity('original_title', query)  # Trigram similarity for typo tolerance
-        ).filter(
-            Q(rank__gte=0.1) | Q(similarity__gte=0.3)  # Filter by either FTS rank or trigram similarity
-        ).order_by('-rank', '-similarity')  # Sort by rank first, then by similarity
+        movies = (
+            Movie.objects.annotate(rank=SearchRank(search_vector, search_query), similarity=TrigramSimilarity("original_title", query))  # Trigram similarity for typo tolerance
+            .filter(Q(rank__gte=0.1) | Q(similarity__gte=0.3))  # Filter by either FTS rank or trigram similarity
+            .order_by("-rank", "-similarity")
+        )  # Sort by rank first, then by similarity
 
         # Limit results
         movies = list(movies[:10])
@@ -136,7 +134,6 @@ def movie_search(request):
             movies = []
 
             for title in movie_names:
-
                 try:
                     movie_name = re.findall(r"^(.*) \(\d+\)_\d+$", title)
                     year = re.findall(r"\((\d+)\)", title)

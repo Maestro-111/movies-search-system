@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     "movie.apps.MovieConfig",
     "menu.apps.MenuConfig",
     "users.apps.UsersConfig",
-    'django.contrib.postgres',
+    "django.contrib.postgres",
     "playlist.apps.PlaylistConfig",
     "forum.apps.ForumConfig",
     "debug_toolbar",

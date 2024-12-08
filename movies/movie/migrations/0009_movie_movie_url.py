@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("movie", "0008_alter_actors_actor_name_and_more"),
     ]

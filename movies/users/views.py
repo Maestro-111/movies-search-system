@@ -4,12 +4,10 @@ from django.shortcuts import render, reverse
 from .forms import LoginUserForm, RegisterUserForm, ChangePasswordForm
 from django.contrib import messages
 
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
 
 
 def login_user(request):
-
     if request.method == "POST":
         form = LoginUserForm(request.POST)
         if form.is_valid():
@@ -53,8 +51,8 @@ def logout_user(request):
     logout(request)
     return HttpResponseRedirect(reverse("main_menu"))
 
-def change_password(request):
 
+def change_password(request):
     if request.method == "POST":
         form = ChangePasswordForm(request.POST)
         if form.is_valid():
@@ -73,11 +71,7 @@ def change_password(request):
                 return HttpResponseRedirect(reverse("user_home"))
 
             else:
-                return render(request, "users/change_password.html", {
-                                                                            "error": "Wrong password or username",
-                                                                            "form": form
-                                                                                            }
-                            )
+                return render(request, "users/change_password.html", {"error": "Wrong password or username", "form": form})
     else:
         form = ChangePasswordForm()
 

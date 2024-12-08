@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 
 
 class Movie(models.Model):
-
     movie_id = models.IntegerField(primary_key=True)
     original_title = models.CharField(max_length=512, null=True, blank=True)
     overview = models.TextField(null=True, blank=True)
