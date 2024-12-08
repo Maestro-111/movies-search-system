@@ -9,3 +9,5 @@ movies_cache
 .DS_Store
 *.bin
 *.pickle
+*.log
+ß

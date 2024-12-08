@@ -8,6 +8,12 @@ class LoginUserForm(forms.Form):
     password = forms.CharField(label="Password", widget=forms.PasswordInput(attrs={"class": "form-input"}))
 
 
+class ChangePasswordForm(forms.Form):
+    username = forms.CharField(label="User Name", widget=forms.TextInput(attrs={"class": "form-input"}))
+    password = forms.CharField(label="Old Password", widget=forms.PasswordInput(attrs={"class": "form-input"}))
+    password2 = forms.CharField(label="New Password", widget=forms.PasswordInput(attrs={"class": "form-input"}))
+
+
 class RegisterUserForm(forms.ModelForm):
     username = forms.CharField(label="User Name")
     password = forms.CharField(label="Password", widget=forms.PasswordInput)

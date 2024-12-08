@@ -1,11 +1,15 @@
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, reverse
-from .forms import LoginUserForm, RegisterUserForm
+from .forms import LoginUserForm, RegisterUserForm, ChangePasswordForm
 from django.contrib import messages
+
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
 
 
 def login_user(request):
+
     if request.method == "POST":
         form = LoginUserForm(request.POST)
         if form.is_valid():
@@ -27,7 +31,7 @@ def register_user(request):
     if request.method == "POST":
         form = RegisterUserForm(request.POST)
         if form.is_valid():
-            user = form.save(commit=False)  # создание объекта без сохранения в БД
+            user = form.save(commit=False)
             user.set_password(form.cleaned_data["password"])
             user.save()
             messages.success(
@@ -48,3 +52,33 @@ def create_user(request):
 def logout_user(request):
     logout(request)
     return HttpResponseRedirect(reverse("main_menu"))
+
+def change_password(request):
+
+    if request.method == "POST":
+        form = ChangePasswordForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data["username"]
+            old_password = form.cleaned_data["password"]
+            new_password = form.cleaned_data["password2"]
+
+            user = authenticate(request, username=username, password=old_password)
+            if user:
+                user.set_password(new_password)
+                user.save()
+
+                update_session_auth_hash(request, user)
+                messages.success(request, "Your password has been successfully updated!")
+
+                return HttpResponseRedirect(reverse("user_home"))
+
+            else:
+                return render(request, "users/change_password.html", {
+                                                                            "error": "Wrong password or username",
+                                                                            "form": form
+                                                                                            }
+                            )
+    else:
+        form = ChangePasswordForm()
+
+    return render(request, "users/change_password.html", {"form": form})

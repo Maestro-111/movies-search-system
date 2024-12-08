@@ -3,6 +3,7 @@ from fuzzywuzzy import process
 from .models import Movie, MovieMetaData, Rating, MovieActor
 
 from django.db.models import Q
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector, TrigramSimilarity
 
 from django.core.cache import cache
 from sentence_transformers import SentenceTransformer
@@ -21,8 +22,12 @@ from PIL import Image, UnidentifiedImageError
 
 import warnings
 import re
+import os
 
 from config.logger_config import logger
+
+from langdetect import detect
+import json
 
 # Ignore all warnings
 warnings.filterwarnings("ignore")
@@ -72,23 +77,41 @@ def movie_search(request):
 
     if query:
 
-        all_movies = Movie.objects.all()
-        movie_titles = [movie.original_title for movie in all_movies]
+        # all_movies = Movie.objects.all()
+        # movie_titles = [movie.original_title for movie in all_movies]
+        #
+        # # Get best matches using fuzzywuzzy
+        # best_matches = process.extract(query, movie_titles, limit=20)
+        # best_match_titles = [match[0] for match in best_matches if match[1] >= 90]
+        # title_to_score = {match[0]: match[1] for match in best_matches}
+        #
+        # movies = list(Movie.objects.filter(original_title__in=best_match_titles))
 
-        # Get best matches using fuzzywuzzy
-        best_matches = process.extract(query, movie_titles, limit=20)
-        best_match_titles = [match[0] for match in best_matches if match[1] >= 90]
-        title_to_score = {match[0]: match[1] for match in best_matches}
+        relative_path = "config/languages.json"
+        file_path = os.path.join('/'.join(str(settings.BASE_DIR).split("/")[:-1]), relative_path)
 
-        movies = list(Movie.objects.filter(original_title__in=best_match_titles))
+        with open(file_path, 'r') as f:
+            language_config = json.load(f)
 
-        logger.info(f"Displaying best matches {best_match_titles}: for {query}")
+        language = detect(query)
+        pg_config = language_config.get(language, 'english')  # Fallback to English if language is not found
 
-        for movie in movies:
-            movie.score = title_to_score.get(movie.original_title, 0)
+        # Perform Full Text Search
+        search_query = SearchQuery(query, config=pg_config)
+        search_vector = SearchVector('original_title', config=pg_config, weight='A')
 
-        # Sort movies by score
-        movies.sort(key=lambda x: x.score, reverse=True)
+        # Combine FTS with Trigram Similarity
+        movies = Movie.objects.annotate(
+            rank=SearchRank(search_vector, search_query),
+            similarity=TrigramSimilarity('original_title', query)  # Trigram similarity for typo tolerance
+        ).filter(
+            Q(rank__gte=0.1) | Q(similarity__gte=0.3)  # Filter by either FTS rank or trigram similarity
+        ).order_by('-rank', '-similarity')  # Sort by rank first, then by similarity
+
+        # Limit results
+        movies = list(movies[:10])
+
+        logger.info(f"best mathces for {query} are ': {[movie.original_title for movie in movies]}")
 
     if image:
         posters_collection = chroma_client.get_collection("posters_collection")
@@ -110,17 +133,9 @@ def movie_search(request):
             )
 
             movie_names = results["ids"][0]
-
-            print(movie_names)
-
             movies = []
 
             for title in movie_names:
-                movie_name = re.findall(r"^(.*) \(\d+\)_\d+$", title)
-                year = re.findall(r"\((\d+)\)", title)
-
-                print(movie_name)
-                print(year)
 
                 try:
                     movie_name = re.findall(r"^(.*) \(\d+\)_\d+$", title)
@@ -131,12 +146,14 @@ def movie_search(request):
 
                     matching_movies = Movie.objects.filter(Q(original_title__icontains=movie_name) & Q(year=year))
 
+                    logger.info(f"ResNet Search results': {[movie.original_title for movie in matching_movies]}")
+
                     if matching_movies.exists():
                         movies.extend(list(matching_movies))
                     else:
-                        print(f"No movies found with the title: {title}")
+                        logger.info(f"No movies found with the title: {title}")
                 except Exception as e:
-                    print(f"Error retrieving movie with title {title}: {e}")
+                    logger.exception(f"Error retrieving movie with title {title}: {e}")
 
         except UnidentifiedImageError:
             return render(request, "movie/search_movie.html", {"error": "Invalid image format"})
