@@ -82,6 +82,7 @@ jupyterlab_pygments==0.3.0
 jupyterlab_server==2.27.3
 kiwisolver==1.4.7
 kubernetes==31.0.0
+langdetect==1.0.9
 Levenshtein==0.25.1
 llvmlite==0.42.0
 markdown-it-py==3.0.0

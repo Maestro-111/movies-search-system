@@ -76,18 +76,8 @@ def movie_search(request):
     movies = None
 
     if query:
-        # all_movies = Movie.objects.all()
-        # movie_titles = [movie.original_title for movie in all_movies]
-        #
-        # # Get best matches using fuzzywuzzy
-        # best_matches = process.extract(query, movie_titles, limit=20)
-        # best_match_titles = [match[0] for match in best_matches if match[1] >= 90]
-        # title_to_score = {match[0]: match[1] for match in best_matches}
-        #
-        # movies = list(Movie.objects.filter(original_title__in=best_match_titles))
-
-        relative_path = "config/languages.json"
-        file_path = os.path.join("/".join(str(settings.BASE_DIR).split("/")[:-1]), relative_path)
+        relative_path = "movies/config/languages.json"
+        file_path = os.path.join(settings.BASE_DIR, relative_path)
 
         with open(file_path, "r") as f:
             language_config = json.load(f)

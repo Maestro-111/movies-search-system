@@ -1,16 +1,11 @@
 # Ignore SQLite database files
 *.sqlite3
 *.db
+*.bin
+*.pickle
 
 # Ignore cache and temporary files
 movies_cache/
 __pycache__/
 *.pyc
 *.pyo
-
-# Ignore specific folders
-movies/movie/94e3a747-26a5-4b50-a7b4-86bedf53b1c8/
-
-# Ignore specific files
-movies/movie/chroma.sqlite3
-movies/db.sqlite3

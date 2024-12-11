@@ -28,5 +28,4 @@ urlpatterns = [
     path("playlist/", include("playlist.urls")),
     path("forum/", include("forum.urls")),
 ] + debug_toolbar_urls()
-
 handler404 = page_not_found

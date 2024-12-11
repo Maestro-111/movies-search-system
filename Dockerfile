@@ -11,8 +11,9 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 RUN python -m nltk.downloader punkt
 
-COPY movies /apps/movies
+COPY movies /app/movies
 COPY populate_database /app/populate_database
+COPY .env /app/
 
 # Set environment variables
 ENV DJANGO_SETTINGS_MODULE=movies.settings

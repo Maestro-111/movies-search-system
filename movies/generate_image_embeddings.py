@@ -99,4 +99,3 @@ def generate_and_save_embeddings():
 if __name__ == "__main__":
     delete_existing_embeddings()
     generate_and_save_embeddings()
-    print(posters_collection.count())

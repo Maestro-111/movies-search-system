@@ -17,7 +17,9 @@ from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv())
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+# print(BASE_DIR)
 
 """
 Hard coding features (columns) used in cosine sim
@@ -31,8 +33,8 @@ SPOKEN_LANGUAGES = os.getenv("SPOKEN_LANGUAGES").split(",")
 
 FEATURES = GENERAL + GENRES + SPOKEN_LANGUAGES
 
-METADATA_PATH = BASE_DIR / "data" / "movies_metadata_short.xlsx"
-MODEL_DIR = BASE_DIR / "word2vec.model"
+METADATA_PATH = BASE_DIR / "movies" / "data" / "movies_metadata_short.xlsx"
+MODEL_DIR = BASE_DIR / "movies" / "word2vec.model"
 
 #  metadata model reads the following file always
 
@@ -84,7 +86,7 @@ ROOT_URLCONF = "movies.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"],
+        "DIRS": [BASE_DIR / "movies" / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -139,7 +141,7 @@ DATABASES = {
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",  # "LOCATION": "redis://redis:6379/1" for container
+        "LOCATION": "redis://redis:6379/1",  # "LOCATION": "redis://redis:6379/1" for container
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
@@ -183,9 +185,9 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [
-    BASE_DIR / "static",
+    BASE_DIR / "movies" / "static",
 ]
-STATIC_ROOT = BASE_DIR / "collected_static"
+STATIC_ROOT = BASE_DIR / "movies" / "collected_static"
 
 if not os.path.exists(STATIC_ROOT):
     os.makedirs(STATIC_ROOT)
