@@ -29,13 +29,22 @@ PostgresSQL is used to store it.
 
 ## Methodology
 
-1. Our recommendation system is content based - it makes predictions based only on the movies you selected.
-2. As a baseline we are using cosine similarity. Each movie has its own numeric representation (vector) which is stored in PostgresSQL (movie metadata table).
-3. Also, we are producing additional text features for our model with Word2Vec. train_embedding is the module to train Word2Vec on current movies' data.
-4. Finally, we concatenate the features and call cosine similarity measure for each movie pair. Then we sort by similarity measure and select top 10.
-5. We store recommendation in movies_cache folder (FileBasedCache).
-6. We also have a chatbot assistant to help users to find in natural help, not only by name. We calculate embeddings and store them in ChromaDB
-7. You can search for a movie by its poster (image) with the help of embeddings built with ResNet. We store image embeddings in ChromaDB as well.
+### Search
+
+1) We use PostgresSQL to store the data
+2) Users have 3 ways to search for a movie. 
+
+   1) By title. System will use PostgresSQL full text search to look for the best match based on a title.
+   2) In a natural language by using custom chat box. For that we store text embeddings of each movie in ChromaDB client.
+   3) By movie poster. For that we store image embeddings of each movie poster in ChromaDB client.
+    
+    The most accurate way is #1.
+
+### Recommendations
+
+1) Our system produces content based recommendations. It means it will recommend movies only based on the choice of previosuly selected movies.
+2) We use simple cosine similarity equation modified to accept more inputs such as ratings.
+
 
 ## Project Set Up
 
@@ -52,7 +61,7 @@ cd movies-search-system
 
 It's convinient to use docker to  get all packages/dependencies set up together.
 
-1) Create a dokcer compose:
+1) Create a docker compose:
 
 ```
 docker compose build
