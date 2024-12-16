@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}My Friends{% endblock %}
+
+{% block header %}
+    My Friends
+    <div style="position: absolute; top: 20px; right: 20px;">
+        <form action="{% url 'users:add_friend' %}" method="get">
+            <button type="submit" style="padding: 5px 10px;">Look for a Friend</button>
+        </form>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <ul>
+        {% for friend in friends %}
+            <li>{{ friend.username }}</li>
+        {% empty %}
+            <li>You have no friends yet.</li>
+        {% endfor %}
+    </ul>
+    <nav>
+        <p><a href="{% url 'users:user_home' %}">Return to User Home</a></p>
+    </nav>
+{% endblock %}

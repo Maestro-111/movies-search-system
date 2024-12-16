@@ -2,7 +2,14 @@
 
 {% block title %}User Home{% endblock %}
 
-{% block header %}Welcome to User Home!{% endblock %}
+{% block header %}
+    Welcome to User Home!
+    <div style="position: absolute; top: 20px; right: 20px;">
+        <form action="{% url 'users:view_friends' %}" method="get">
+            <button type="submit" style="padding: 5px 10px;">View Friends</button>
+        </form>
+    </div>
+{% endblock %}
 
 {% block content %}
     <div class="button-container">
@@ -28,7 +35,6 @@
             <button type="submit">Change Password</button>
         </form>
     </div>
-
 
     <nav>
         <p><a href="{% url 'main_menu' %}" class="bold-link">Return to the menu page</a></p>

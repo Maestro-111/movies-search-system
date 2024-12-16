@@ -14,7 +14,8 @@ def start_search(request):
 
 
 def user_home(request):
-    return render(request, "menu/user_home.html")
+    user_home_url = reverse("users:user_home")
+    return redirect(user_home_url)
 
 
 def page_not_found(request, exception):

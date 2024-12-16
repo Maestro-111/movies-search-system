@@ -1,8 +1,10 @@
 from django.test import TestCase
 from .models import Movie, MovieGenres, MovieLanguages, User, Actors, Rating
+from django.urls import reverse
+from django.db import connection
 
 
-class MovieModelTest(TestCase):
+class CreateMovie(TestCase):
     def setUp(self):
         self.genre_action = MovieGenres.objects.create(genre_id=1, genre="Action")
         self.genre_sci_fi = MovieGenres.objects.create(genre_id=2, genre="Sci-Fi")
@@ -29,9 +31,34 @@ class MovieModelTest(TestCase):
 
         Rating.objects.create(user=self.user, movie=self.movie, rating=5)
 
+
+class MovieModelTest(CreateMovie, TestCase):
+    def setUp(self):
+        super().setUp()
+
     def test_movie_creation(self):
         self.assertEqual(self.movie.original_title, "Inception")
         self.assertEqual(self.movie.genres.count(), 2)
         self.assertEqual(self.movie.languages.count(), 2)
         self.assertEqual(self.movie.actors.count(), 2)
         self.assertEqual(self.movie.ratings.count(), 1)
+
+
+class MovieSearchTest(CreateMovie, TestCase):
+    def setUp(self):
+        with connection.cursor() as cursor:
+            cursor.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm;")
+            cursor.execute("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;")
+            cursor.execute("CREATE EXTENSION IF NOT EXISTS unaccent;")
+        super().setUp()
+
+    def test_search_movies(self):
+        response = self.client.post(reverse("movie_search"), {"query": "Inception"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Inception")
+        self.assertNotContains(response, "The Matrix")
+
+    def test_search_stress(self):
+        for _ in range(1000):
+            response = self.client.post(reverse("movie_search"), {"query": "Inception"})
+            assert response.status_code == 200

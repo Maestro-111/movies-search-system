@@ -2,9 +2,32 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, reverse
 from .forms import LoginUserForm, RegisterUserForm, ChangePasswordForm
+from .models import Friendship
 from django.contrib import messages
 
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+
+
+def user_home(request):
+    return render(request, "users/user_home.html")
+
+
+@login_required
+def user_view_friends(request):
+    friends = Friendship.objects.filter(user=request.user).values_list("friend", flat=True)
+
+    context = {"friends": friends}
+
+    return render(request, "users/friends.html", context=context)
+
+
+def user_add_friend(request):
+    return HttpResponse("YES!")
+
+
+def user_delete_friends(request):
+    pass
 
 
 def login_user(request):

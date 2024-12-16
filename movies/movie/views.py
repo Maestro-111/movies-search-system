@@ -98,7 +98,6 @@ def movie_search(request):
 
         # Limit results
         movies = list(movies[:10])
-
         logger.info(f"best mathces for {query} are ': {[movie.original_title for movie in movies]}")
 
     if image:
@@ -163,8 +162,6 @@ def show_movie(request, movie_id):
     recommended_ids = cache.get(cache_key)
 
     movie = Movie.objects.get(movie_id__exact=movie_id)
-    metadata = MovieMetaData.objects.get(movie_id=movie_id)
-
     wordvec = Word2Vec.load(str(settings.MODEL_DIR))
 
     genres = movie.genres.all()
@@ -175,21 +172,7 @@ def show_movie(request, movie_id):
 
     movie_actors = MovieActor.objects.filter(movie=movie).select_related("actor")
 
-    actors = [movie_actor.actor.actor_name for movie_actor in movie_actors]
-    characters = [movie_actor.character_name for movie_actor in movie_actors]
-
-    print("!")
-    print(movie_actors)
-    print(actors)
-    print(characters)
-    print("!")
-
     if not recommended_ids:
-        print(movie)
-        print(metadata)
-        print(genres_in_movie)
-        print(language_in_movie)
-
         all_metadata = list(MovieMetaData.objects.all().select_related("movie"))
         all_metadata_dict = {meta.movie_id: meta for meta in all_metadata}
 

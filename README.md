@@ -46,73 +46,11 @@ git clone https://github.com/Maestro-111/movies-search-system.git
 cd movies-search-system
 ```
 
-## Data Set Up
-
-Script to normalize Kaggle data currently is not uploaded.
-Instead, all tables, imported in xlsx, are present in "movies/data" folder.
-
-We need to create tables first. You'll need to:
-
-1) Create venv (virtual environment), activate venv, install requirements and go to movies directory.
-
-```
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-cd movies
-```
-
-2) Run makemigrations
-
-```
-python manage.py makemigrations
-```
-
-3) Run migrate
-
-```
-python manage.py migrate
-```
-
-4) Finally, we populate the database. Deactivate current venv, go to populate_database module and activate its venv.
-
-```
-deactivate
-cd ..
-cd populate_database
-venv\Scripts\activate
-```
-
-Run main.py to populate created tables
-
-```
-python main.py
-```
-
-## How to Run:
-
-After you populated database, go back to movies dir
-```
-deactivate
-cd ..
-venv\Scripts\activate
-cd movies
-```
-
-Create embedding for the movies. App's going to use them later for requests in natural language
-
-```
-python generate_embeddings.py
-```
-
-Execute command:
-
-```
-python manage.py runserver
-```
 
 
 ## Docker Set up
+
+It's convinient to use docker to  get all packages/dependencies set up together.
 
 1) Create a dokcer compose:
 
@@ -138,9 +76,18 @@ python main.py
 
 ```
 
+4) Create Embeddings for both images/text
+
+```
+cd ..
+python generate_text_embeddings.py
+python generate_image_embeddings.py
+```
+
 
 ## TO DO
 
 1. Updating Forum Section.
 2. front-end (cont)
-3. Fix .dokcerignore issue (e.g. not ignoreing sqlite files)
+3. Fix .dockerignore issue (e.g. not ignoring sqlite files)
+4. Continue updating friends section within users. Final goal is to have more info for recommendations

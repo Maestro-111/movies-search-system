@@ -8,7 +8,6 @@ from .models import Playlist
 from .forms import PlaylistForm, RatingForm
 
 from django.conf import settings
-from django.core.cache import cache
 from recommendations import produce_recommendations
 from recommendations import get_combined_features
 
@@ -242,6 +241,10 @@ def group_recommendation(request, selected_movies, wordvec):
 
 @login_required
 def get_recommendation_for_playlist(request, playlist_id):
+    """
+    get recommendations for a user for based on all exact playlist
+    """
+
     wordvec = Word2Vec.load(str(settings.MODEL_DIR))
     playlist = Playlist.objects.get(id=playlist_id)
 
@@ -254,18 +257,16 @@ def get_recommendation_for_playlist(request, playlist_id):
             {"error_message": "You do not have any movies in your playlists"},
         )
 
-    cache_key = f"recommendation_playlist_{playlist_id}"
-    recommendations = cache.get(cache_key)
-
-    if not recommendations:
-        recommendations = group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec)
-        cache.set(cache_key, recommendations, timeout=300)
-
+    recommendations = group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec)
     return render(request, "playlist/show_recommendations.html", {"result": recommendations})
 
 
 @login_required
 def get_my_recommendations(request):
+    """
+    get recommendations for a user for based on all playlists
+    """
+
     wordvec = Word2Vec.load(str(settings.MODEL_DIR))
     playlists = Playlist.objects.filter(user=request.user)
 
@@ -288,11 +289,5 @@ def get_my_recommendations(request):
             {"error_message": "You do not have any movies in your playlists"},
         )
 
-    cache_key = f"recommendation_user_{request.user.id}"
-    recommendations = cache.get(cache_key)
-
-    if not recommendations:
-        recommendations = group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec)
-        cache.set(cache_key, recommendations, timeout=300)
-
+    recommendations = group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec)
     return render(request, "playlist/show_recommendations.html", {"result": recommendations})
