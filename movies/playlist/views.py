@@ -97,36 +97,43 @@ def view_single_playlist(request, playlist_id: int):
 
     # Handle rating submission
     if request.method == "POST" and "rating" in request.POST:
+
+
         movie_id = request.POST.get("movie_id")
         movie = get_object_or_404(Movie, movie_id=movie_id)
         rating_form = RatingForm(request.POST)
 
+        print(movie_id)
+
         if rating_form.is_valid():
+
             rating = rating_form.save(commit=False)
             rating.user = request.user
             rating.movie = movie
 
+            print(rating)
+            print(rating.rating)
+            print(rating.user)
+            print(rating.movie)
+
             existing_rating = Rating.objects.filter(user=request.user, movie=movie).first()
 
+            print(existing_rating)
+
             if existing_rating:
-                # Update the existing rating
                 existing_rating.rating = rating.rating
                 existing_rating.save()
             else:
-                # Save the new rating
                 try:
                     rating.save()
                 except IntegrityError:
-                    # Handle the case where the rating could not be saved
-                    # This block might be redundant with the above check,
-                    # but it's a good practice to include it for safety.
                     pass
 
             return redirect("view_single_playlist", playlist_id=playlist.id)
     else:
         rating_form = RatingForm()
 
-    movie_ratings_display = {movie.movie_id: (rating.rating if rating else None) for movie, rating in zip(movies, [Rating.objects.filter(movie=movie).first() for movie in movies])}
+    movie_ratings_display = {movie.movie_id: (rating.rating if rating else None) for movie, rating in zip(movies, [Rating.objects.filter(user=request.user, movie=movie).first() for movie in movies])}
 
     print(movie_ratings_display)
 

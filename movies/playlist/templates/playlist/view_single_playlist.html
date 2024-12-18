@@ -5,6 +5,9 @@
 {% block header %}Playlists{% endblock %}
 
 {% block content %}
+
+    {% load my_tags %}
+
     <h2>{{ playlist.name }}</h2>
 
     <form method="POST" action="" style="display: flex; align-items: center;">
@@ -26,7 +29,7 @@
                         <a href="{{ movie.get_absolute_url }}" style="margin-right: 10px;">{{ movie.original_title }}</a>
                         <span style="font-weight: bold;">
                             {% if movie.movie_id in movie_ratings_display %}
-                                (Rating: {{ movie_ratings_display.movie.movie_id}} )
+                               (Rating: {{ movie_ratings_display|get_dict_value:movie.movie_id }} )
                             {% else %}
                                 (Not Rated)
                             {% endif %}

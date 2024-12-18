@@ -13,10 +13,10 @@ from recommendations import get_combined_features
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from gensim.models import Word2Vec
-from chroma_db import chroma_client
+from embeddings.chroma_db import chroma_client
 
 import torch
-from generate_image_embeddings import get_model_pipeline
+from embeddings.generate_image_embeddings import get_model_pipeline
 from PIL import Image, UnidentifiedImageError
 
 import warnings

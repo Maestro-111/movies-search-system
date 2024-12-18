@@ -8,12 +8,19 @@ django.setup()
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 
-from movie.models import Movie,Rating
+from django.conf import settings
+
+from movie.models import Movie,Rating,MovieMetaData
 from playlist.models import Playlist
 
 import random
 from django.db import transaction, IntegrityError
 
+import pandas as pd
+import numpy as np
+
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def create_users(n):
@@ -132,44 +139,102 @@ def assign_ratings_via_playlists(min_rating=1, max_rating=5):
     print("Ratings assigned to movies via playlists successfully.")
 
 
-def output_data():
-    pass
+def output_data(output_file="ratings_data.xlsx"):
+    """
+    Outputs all data from the Rating model combined with movie metadata into an Excel file.
+
+    Args:
+        output_file (str): Name of the output Excel file. Defaults to "ratings_data.xlsx".
+
+    Returns:
+        None
+    """
+
+    ratings = Rating.objects.select_related("user", "movie").all()
+    movie_metadata = {meta.movie_id: meta for meta in MovieMetaData.objects.all()}
+
+    if not ratings.exists():
+        print("No ratings data found.")
+        return
+
+    # Collect data for the DataFrame
+    data = []
+
+    for rating in ratings:
+        metadata = movie_metadata.get(rating.movie.movie_id)  # Ensure correct key access
+
+        # Extract metadata features
+        if metadata:
+            meta_features = [getattr(metadata, feature, None) for feature in settings.FEATURES]
+        else:
+            meta_features = [None] * len(settings.FEATURES)
+
+        # Add rating data and metadata to the row
+        row = {
+            "User": rating.user.username,
+            "Movie": rating.movie.original_title,
+            "Rating": rating.rating,
+        }
+        row.update({feature: value for feature, value in zip(settings.FEATURES, meta_features)})
+
+        data.append(row)
+
+    # Create a DataFrame from the collected data
+    df = pd.DataFrame(data)
+
+    # Export to Excel
+    df.to_excel(output_file, index=False)
+    print(f"Ratings data successfully written to {output_file}.")
+
+
 
 
 def remove_random_data():
-
     """
-    Removes data added by the `create_populate_playlists` function:
-    - Removes all movies from playlists.
-    - Deletes all playlists.
+    Removes data added by the random data creation functions:
+    - Removes all ratings for movies and users.
+    - Clears all movies from playlists.
+    - Deletes all playlists created by the function.
     - Deletes users with usernames matching the pattern used for creation.
     """
 
     with transaction.atomic():
-        # Step 1: Remove all movies from playlists
+        # Step 1: Remove all ratings for movies rated by the created users
+        users = User.objects.filter(username__startswith="user_")  # Target created users
+        ratings = Rating.objects.filter(user__in=users)  # Ratings by these users
+        deleted_ratings_count, _ = ratings.delete()
+        print(f"Deleted {deleted_ratings_count} ratings.")
+
+        # Step 2: Remove all movies from playlists
         playlists = Playlist.objects.filter(name__startswith="Playlist_")
         for playlist in playlists:
             playlist.movie.clear()  # Clear the many-to-many relationship
 
         print(f"Cleared movies from {playlists.count()} playlists.")
 
-        # Step 2: Delete all playlists created by the function
+        # Step 3: Delete all playlists created by the function
         deleted_playlists_count, _ = playlists.delete()
         print(f"Deleted {deleted_playlists_count} playlists.")
 
-        # Step 3: Delete users created by the function
-        users = User.objects.filter(username__startswith="user_")
+        # Step 4: Delete users created by the function
         deleted_users_count, _ = users.delete()
         print(f"Deleted {deleted_users_count} users.")
 
+        # Step 5: Clear the passwords file
         with open("passwords.txt", "w") as file:
-            file.write(f" ")
+            file.write("")
+
+        print("Cleared passwords file.")
 
         print("Random data cleanup complete.")
 
 
+if __name__ == "__main__":
 
-# create_users(n=100)
-# create_populate_playlists(n_playlists=50, n_movies=10, users=None)
-assign_ratings_via_playlists()
-# remove_random_data()
+    create_users(n=100)
+    create_populate_playlists(n_playlists=50, n_movies=10, users=None)
+
+    assign_ratings_via_playlists()
+    output_data(output_file=os.path.join(BASE_DIR, "movies/data/ratings_data.xlsx"))
+
+    # remove_random_data()
