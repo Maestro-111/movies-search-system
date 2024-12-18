@@ -66,6 +66,7 @@ def enter_query(request):
 
 
 def movie_search(request):
+
     """
     Find the best matches for the query using fuzzy matching or image embeddings.
     """

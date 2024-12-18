@@ -11,3 +11,4 @@ movies_cache
 *.pickle
 *.log
 problemseta.py
+passwords.txt

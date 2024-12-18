@@ -12,11 +12,11 @@ from recommendations import produce_recommendations
 from recommendations import get_combined_features
 
 from gensim.models import Word2Vec
+from django.db import transaction
 import random
 
+
 # Create your views here.
-
-
 # ADD: param to show movie in get_abs_url for movie to pass corresponding url to go back
 
 
@@ -40,12 +40,6 @@ def create_playlist(request):
             )
         else:
             Playlist.objects.create(name=play_list_name, user=request.user)
-
-            # movie_id = request.GET.get("movie_id")
-
-            # if movie_id:
-            #     return redirect('add_movie_to_playlist', movie_id=movie_id)
-
             return HttpResponseRedirect(reverse("main_menu"))
 
     else:
@@ -54,15 +48,16 @@ def create_playlist(request):
 
 @login_required
 def view_playlists(request):
+
     playlists = Playlist.objects.filter(user=request.user)
 
     context = {"playlists": playlists}
-
     return render(request, "playlist/view_all_playlists.html", context)
 
 
 @login_required
 def delete_playlist(request, playlist_id):
+
     playlist = get_object_or_404(Playlist, id=playlist_id)
     playlist.delete()
 
@@ -74,26 +69,20 @@ def remove_movie_from_playlist(request, playlist_id, movie_id):
     playlist = get_object_or_404(Playlist, id=playlist_id, user=request.user)
     movie = get_object_or_404(Movie, movie_id=movie_id)
 
-    playlist.movie.remove(movie)
+    with transaction.atomic():
 
-    try:
+        playlist.movie.remove(movie)
+
         rating = Rating.objects.get(movie=movie, user=request.user)
-        # Delete the rating if it exists
         rating.delete()
-    except Rating.DoesNotExist:
-        # Rating does not exist; nothing to delete
-        pass
+
 
     return redirect("view_single_playlist", playlist_id=playlist.id)
 
 
 @login_required
-def give_movie_rating(request):
-    pass
-
-
-@login_required
 def view_single_playlist(request, playlist_id: int):
+
     playlist = get_object_or_404(Playlist, id=playlist_id)
     movies = playlist.movie.all()
 
@@ -138,6 +127,8 @@ def view_single_playlist(request, playlist_id: int):
         rating_form = RatingForm()
 
     movie_ratings_display = {movie.movie_id: (rating.rating if rating else None) for movie, rating in zip(movies, [Rating.objects.filter(movie=movie).first() for movie in movies])}
+
+    print(movie_ratings_display)
 
     context = {
         "movies": movies,

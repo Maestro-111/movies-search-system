@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Friend Search{% endblock %}
+
+{% block header %}Look for a friend{% endblock %}
+
+{% block content %}
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'users/css/styles.css' %}">
+
+<div class="search-container">
+    <form method="POST" action="{% url 'users:add_friend' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-row">
+            <div class="search-input-container">
+                <label for="query">Enter Friend Details:</label>
+                <input type="text" id="query" name="query" placeholder="Enter Friend Details">
+            </div>
+
+        </div>
+        <button type="submit" class="search-btn">Search</button>
+    </form>
+</div>
+
+
+    {% if error %}
+        <div class="error-message" style="color: red; margin-top: 20px;">
+            <strong>Error:</strong> {{ error }}
+        </div>
+    {% endif %}
+
+
+    <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+        <p>Loading...</p>
+    </div>
+
+    {% if users %}
+        <h2>Search Results:</h2>
+        <ul>
+            {% for user in users %}
+
+                <li>
+                    <span class="label">Friend Name: {{ user.username }} </span>
+                </li>
+
+                {% if not forloop.last %}
+                <hr>
+                {% endif %}
+
+            {% empty %}
+                <li>No users found.</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <nav>
+        <p><a href="{% url 'users:user_home' %}" class="bold-link">Return to the user home page</a></p>
+    </nav>
+
+
+    <script src="{% static 'users/javascript/loader.js' %}"></script>
+
+{% endblock %}

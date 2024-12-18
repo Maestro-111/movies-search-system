@@ -46,6 +46,16 @@ PostgresSQL is used to store it.
 2) We use simple cosine similarity equation modified to accept more inputs such as ratings.
 
 
+### Embeddings Storage
+
+1) To store Embeddings efficiently we use chroma db client for that.
+
+
+### Redis
+
+1) We use Redis to cache the results from different searches/recommendations. 
+
+
 ## Project Set Up
 
 You can clone rep from GitHub:

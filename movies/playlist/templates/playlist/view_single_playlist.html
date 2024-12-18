@@ -20,14 +20,25 @@
         <h2>Movies in {{ playlist.name }}:</h2>
         <ul>
             {% for movie in movies %}
-                <li style="display: flex; align-items: center;">
-                    <span class="label">Movie Title:</span>
-                    <a href="{{ movie.get_absolute_url }}" style="margin-right: auto;">{{ movie.original_title }}</a>
-                    <div class="button-container">
+                <li style="display: flex; align-items: center; justify-content: space-between;">
+                    <div>
+                        <span class="label">Movie Title:</span>
+                        <a href="{{ movie.get_absolute_url }}" style="margin-right: 10px;">{{ movie.original_title }}</a>
+                        <span style="font-weight: bold;">
+                            {% if movie.movie_id in movie_ratings_display %}
+                                (Rating: {{ movie_ratings_display.movie.movie_id}} )
+                            {% else %}
+                                (Not Rated)
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="button-container" style="display: flex; gap: 10px;">
+                        <!-- Remove Movie from Playlist -->
                         <form method="POST" action="{% url 'remove_movie_from_playlist' playlist.id movie.movie_id %}">
                             {% csrf_token %}
                             <button type="submit">Remove from playlist</button>
                         </form>
+                        <!-- Rate Movie -->
                         <form method="POST" action="">
                             {% csrf_token %}
                             <input type="hidden" name="movie_id" value="{{ movie.movie_id }}">
@@ -54,3 +65,4 @@
     </nav>
 
 {% endblock %}
+

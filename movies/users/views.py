@@ -8,6 +8,9 @@ from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 
+from django.contrib.auth.models import User
+from django.db.models import Q
+
 
 def user_home(request):
     return render(request, "users/user_home.html")
@@ -23,7 +26,26 @@ def user_view_friends(request):
 
 
 def user_add_friend(request):
-    return HttpResponse("YES!")
+
+    query = request.POST.get("query")
+    users = {}
+
+    if query:
+        print(query)
+
+        users = User.objects.filter(
+            Q(username__icontains=query) |
+            Q(email__icontains=query) |
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(first_name__icontains=query.split()[0], last_name__icontains=query.split()[-1])
+        )
+        print(users)
+
+        for user in users:
+            print(user.username)
+
+    return render(request, "users/add_friend.html", {"users": users})
 
 
 def user_delete_friends(request):
