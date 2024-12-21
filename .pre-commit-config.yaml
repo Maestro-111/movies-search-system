@@ -13,7 +13,10 @@ repos:
       - id: flake8
         args: ["--max-line-length", "300"]  # Set max line length (default is 79)
         exclude:
-          movies/generate_image_embeddings.py
+          movies/embeddings/generate_text_embeddings.py
+          movies/embeddings/generate_image_embeddings.py
+          movies/factorization_machine/create_user_movie_relationships.py
+
   # Check for trailing whitespaces
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0

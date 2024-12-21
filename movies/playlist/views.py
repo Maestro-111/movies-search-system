@@ -48,7 +48,6 @@ def create_playlist(request):
 
 @login_required
 def view_playlists(request):
-
     playlists = Playlist.objects.filter(user=request.user)
 
     context = {"playlists": playlists}
@@ -57,7 +56,6 @@ def view_playlists(request):
 
 @login_required
 def delete_playlist(request, playlist_id):
-
     playlist = get_object_or_404(Playlist, id=playlist_id)
     playlist.delete()
 
@@ -70,19 +68,16 @@ def remove_movie_from_playlist(request, playlist_id, movie_id):
     movie = get_object_or_404(Movie, movie_id=movie_id)
 
     with transaction.atomic():
-
         playlist.movie.remove(movie)
 
         rating = Rating.objects.get(movie=movie, user=request.user)
         rating.delete()
-
 
     return redirect("view_single_playlist", playlist_id=playlist.id)
 
 
 @login_required
 def view_single_playlist(request, playlist_id: int):
-
     playlist = get_object_or_404(Playlist, id=playlist_id)
     movies = playlist.movie.all()
 
@@ -97,8 +92,6 @@ def view_single_playlist(request, playlist_id: int):
 
     # Handle rating submission
     if request.method == "POST" and "rating" in request.POST:
-
-
         movie_id = request.POST.get("movie_id")
         movie = get_object_or_404(Movie, movie_id=movie_id)
         rating_form = RatingForm(request.POST)
@@ -106,7 +99,6 @@ def view_single_playlist(request, playlist_id: int):
         print(movie_id)
 
         if rating_form.is_valid():
-
             rating = rating_form.save(commit=False)
             rating.user = request.user
             rating.movie = movie

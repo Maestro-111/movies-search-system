@@ -26,20 +26,13 @@ def user_view_friends(request):
 
 
 def user_add_friend(request):
-
     query = request.POST.get("query")
     users = {}
 
     if query:
         print(query)
 
-        users = User.objects.filter(
-            Q(username__icontains=query) |
-            Q(email__icontains=query) |
-            Q(first_name__icontains=query) |
-            Q(last_name__icontains=query) |
-            Q(first_name__icontains=query.split()[0], last_name__icontains=query.split()[-1])
-        )
+        users = User.objects.filter(Q(username__icontains=query) | Q(email__icontains=query) | Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(first_name__icontains=query.split()[0], last_name__icontains=query.split()[-1]))
         print(users)
 
         for user in users:

@@ -12,3 +12,4 @@ movies_cache
 *.log
 problemseta.py
 passwords.txt
+*.pth

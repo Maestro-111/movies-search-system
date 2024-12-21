@@ -13,10 +13,11 @@ from recommendations import get_combined_features
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from gensim.models import Word2Vec
+
 from embeddings.chroma_db import chroma_client
 
 import torch
-from embeddings.generate_image_embeddings import get_model_pipeline
+from embeddings.model_pipeline import get_model_pipeline
 from PIL import Image, UnidentifiedImageError
 
 import warnings
@@ -66,7 +67,6 @@ def enter_query(request):
 
 
 def movie_search(request):
-
     """
     Find the best matches for the query using fuzzy matching or image embeddings.
     """

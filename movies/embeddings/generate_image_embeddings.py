@@ -1,40 +1,25 @@
-import pandas as pd
-from chroma_db import posters_collection
-
-import torch
-import torchvision.models as models
-import torchvision.transforms as transforms
-from PIL import Image
-import requests
-from io import BytesIO
-
-import os
-import re
-
 import django
-
-from django.db.models import Q
-from movie.models import Movie
+import os
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movies.settings")
 django.setup()
 
 
-def get_model_pipeline():
-    resnet = models.resnet50(pretrained=True)
-    resnet.eval()
+import pandas as pd
+from chroma_db import posters_collection
 
-    resnet = torch.nn.Sequential(*list(resnet.children())[:-1])
+import torch
 
-    transform = transforms.Compose(
-        [
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-        ]
-    )
+from PIL import Image
+import requests
+from io import BytesIO
 
-    return resnet, transform
+import re
+
+from django.db.models import Q
+from movie.models import Movie
+
+from model_pipeline import get_model_pipeline
 
 
 def delete_existing_embeddings():
@@ -97,5 +82,6 @@ def generate_and_save_embeddings():
 
 
 if __name__ == "__main__":
-    delete_existing_embeddings()
-    generate_and_save_embeddings()
+    print("hello world")
+    # delete_existing_embeddings()
+    # generate_and_save_embeddings()

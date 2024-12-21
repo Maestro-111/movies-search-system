@@ -3,12 +3,13 @@
 {% block title %}My Friends{% endblock %}
 
 {% block header %}
-    My Friends
-    <div style="position: absolute; top: 20px; right: 20px;">
-        <form action="{% url 'users:add_friend' %}" method="get">
-            <button type="submit" style="padding: 5px 10px;">Look for a Friend</button>
-        </form>
-    </div>
+    {{ block.super }} <!-- Retain user display from base.html -->
+{% endblock %}
+
+{% block action_buttons %}
+    <form action="{% url 'users:add_friend' %}" method="get">
+        <button type="submit" style="padding: 5px 10px;">Look for a Friend</button>
+    </form>
 {% endblock %}
 
 {% block content %}

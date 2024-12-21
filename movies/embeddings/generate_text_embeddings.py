@@ -1,12 +1,12 @@
 import os
 import django
 
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movies.settings")
+django.setup()
+
 from sentence_transformers import SentenceTransformer
 from movie.models import Movie, MovieActor
 from chroma_db import movies_collection
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movies.settings")
-django.setup()
 
 
 model = SentenceTransformer("all-MiniLM-L6-v2")

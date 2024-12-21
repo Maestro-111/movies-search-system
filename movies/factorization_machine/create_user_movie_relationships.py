@@ -8,23 +8,21 @@ django.setup()
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 
-from django.conf import settings
 
-from movie.models import Movie,Rating,MovieMetaData
+from movie.models import Movie, Rating, MovieMetaData, MovieActor
 from playlist.models import Playlist
 
 import random
 from django.db import transaction, IntegrityError
 
 import pandas as pd
-import numpy as np
 
 from pathlib import Path
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def create_users(n):
-
     """
     Create n number of users with random usernames and passwords.
 
@@ -38,7 +36,6 @@ def create_users(n):
     created_users = []
 
     for i in range(n):
-
         username = f"user_{get_random_string(5)}_{i}"
         password = get_random_string(10)
 
@@ -48,11 +45,7 @@ def create_users(n):
         email = f"{username}@example.com"
 
         # Create the user
-        user = User.objects.create_user(
-            username=username,
-            password=password,
-            email=email
-        )
+        user = User.objects.create_user(username=username, password=password, email=email)
         created_users.append(user)
 
     print(f"{n} users created successfully.")
@@ -61,16 +54,15 @@ def create_users(n):
 
 
 def create_populate_playlists(n_playlists, n_movies, users=None):
+    """
+    Create n playlists for each user with random movies.
+
+    Args:
+        n (int): Number of playlists to create for each user.
+        users (QuerySet or list, optional): A list or queryset of users. If None, fetch all users.
+
 
     """
-       Create n playlists for each user with random movies.
-
-       Args:
-           n (int): Number of playlists to create for each user.
-           users (QuerySet or list, optional): A list or queryset of users. If None, fetch all users.
-
-
-       """
 
     if users is None:
         users = User.objects.all()  # Fetch all users if not provided
@@ -82,9 +74,7 @@ def create_populate_playlists(n_playlists, n_movies, users=None):
         return
 
     for user in users:
-
         for i in range(n_playlists):
-
             playlist_name = f"Playlist_{user.username}_{i + 1}"
             random_movies = random.sample(movies, min(n_movies, len(movies)))
 
@@ -95,13 +85,10 @@ def create_populate_playlists(n_playlists, n_movies, users=None):
             except IntegrityError as e:
                 print(f"Failed to create playlist for user {user.username}: {e}")
 
-
         print(f"Created {n_playlists} playlists for user: {user.username}")
 
 
-
 def assign_ratings_via_playlists(min_rating=1, max_rating=5):
-
     """
     Assign random ratings to movies for each user based on their playlists.
 
@@ -128,11 +115,7 @@ def assign_ratings_via_playlists(min_rating=1, max_rating=5):
             for movie in movies:
                 rating_value = random.randint(min_rating, max_rating)  # Random rating
 
-                Rating.objects.update_or_create(
-                    user=user,
-                    movie=movie,
-                    defaults={"rating": rating_value}
-                )
+                Rating.objects.update_or_create(user=user, movie=movie, defaults={"rating": rating_value})
 
             print(f"Assigned ratings for {len(movies)} movies to user: {user.username}")
 
@@ -151,7 +134,6 @@ def output_data(output_file="ratings_data.xlsx"):
     """
 
     ratings = Rating.objects.select_related("user", "movie").all()
-    movie_metadata = {meta.movie_id: meta for meta in MovieMetaData.objects.all()}
 
     if not ratings.exists():
         print("No ratings data found.")
@@ -161,32 +143,31 @@ def output_data(output_file="ratings_data.xlsx"):
     data = []
 
     for rating in ratings:
-        metadata = movie_metadata.get(rating.movie.movie_id)  # Ensure correct key access
+        movie_actors = MovieActor.objects.filter(movie=rating.movie).select_related("actor")
 
-        # Extract metadata features
-        if metadata:
-            meta_features = [getattr(metadata, feature, None) for feature in settings.FEATURES]
-        else:
-            meta_features = [None] * len(settings.FEATURES)
+        actors = ", ".join([movie_actor.actor.actor_name or "Unknown Actor" for movie_actor in movie_actors])
+        charaters = ", ".join([movie_actor.character_name or "Unknown Character" for movie_actor in movie_actors])
 
-        # Add rating data and metadata to the row
+        text = (
+            f"{rating.movie.original_title}, a {', '.join([genre.genre for genre in rating.movie.genres.all()])} movie "
+            f"in {', '.join([language.language for language in rating.movie.languages.all()])} from {rating.movie.year or 'an unknown year'}. "
+            f"Actors: {actors}. "
+            f"Characters: {charaters}. "
+            f"{rating.movie.overview or ''}"
+        )
+
         row = {
             "User": rating.user.username,
-            "Movie": rating.movie.original_title,
+            "Movie": text,
             "Rating": rating.rating,
         }
-        row.update({feature: value for feature, value in zip(settings.FEATURES, meta_features)})
 
         data.append(row)
 
-    # Create a DataFrame from the collected data
     df = pd.DataFrame(data)
-
-    # Export to Excel
     df.to_excel(output_file, index=False)
+
     print(f"Ratings data successfully written to {output_file}.")
-
-
 
 
 def remove_random_data():
@@ -230,11 +211,4 @@ def remove_random_data():
 
 
 if __name__ == "__main__":
-
-    create_users(n=100)
-    create_populate_playlists(n_playlists=50, n_movies=10, users=None)
-
-    assign_ratings_via_playlists()
-    output_data(output_file=os.path.join(BASE_DIR, "movies/data/ratings_data.xlsx"))
-
-    # remove_random_data()
+    output_data(output_file=os.path.join(BASE_DIR, "movies/data/new_ratings_data.xlsx"))

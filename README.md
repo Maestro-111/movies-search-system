@@ -32,12 +32,12 @@ PostgresSQL is used to store it.
 ### Search
 
 1) We use PostgresSQL to store the data
-2) Users have 3 ways to search for a movie. 
+2) Users have 3 ways to search for a movie.
 
    1) By title. System will use PostgresSQL full text search to look for the best match based on a title.
    2) In a natural language by using custom chat box. For that we store text embeddings of each movie in ChromaDB client.
    3) By movie poster. For that we store image embeddings of each movie poster in ChromaDB client.
-    
+
     The most accurate way is #1.
 
 ### Recommendations
@@ -53,7 +53,7 @@ PostgresSQL is used to store it.
 
 ### Redis
 
-1) We use Redis to cache the results from different searches/recommendations. 
+1) We use Redis to cache the results from different searches/recommendations.
 
 
 ## Project Set Up
@@ -110,3 +110,5 @@ python generate_image_embeddings.py
 2. front-end (cont)
 3. Fix .dockerignore issue (e.g. not ignoring sqlite files)
 4. Continue updating friends section within users. Final goal is to have more info for recommendations
+5. Recreate embeds for text/images
+6. Issue with styles for user app.
