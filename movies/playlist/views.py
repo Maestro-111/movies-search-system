@@ -194,6 +194,7 @@ def add_movie_to_playlist(request, movie_id):
 
 
 def group_recommendation(request, selected_movies, wordvec):
+
     seen_titles = {movie.original_title for movie in selected_movies}
     recommendations = set()
 
@@ -220,6 +221,10 @@ def group_recommendation(request, selected_movies, wordvec):
         ]
 
         recommended_movie_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings)
+
+        """
+        Rank?
+        """
 
         recommended_movies = [Movie.objects.get(movie_id=id) for id in recommended_movie_ids if id in all_metadata_dict and all_metadata_dict[id].movie.original_title not in seen_titles]
 

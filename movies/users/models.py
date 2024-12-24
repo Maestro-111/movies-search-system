@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-
+from django.urls import reverse
 
 class Friendship(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="friends")
@@ -11,3 +11,14 @@ class Friendship(models.Model):
 
     def __str__(self):
         return f"{self.user.username} is friends with {self.friend.username}"
+
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+
+    def get_absolute_url(self):
+        return reverse("users:show_user", kwargs={"username": self.user.username})
+
+    def __str__(self):
+        return self.user.username

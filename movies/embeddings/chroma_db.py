@@ -3,8 +3,7 @@ import os
 from chromadb.config import Settings
 
 
-persist_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../movies/movie"))
-
+persist_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../embeddings/embeddings_storage"))
 
 chroma_client = chromadb.PersistentClient(path=persist_path, settings=Settings())
 

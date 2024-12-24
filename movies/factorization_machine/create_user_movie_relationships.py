@@ -4,6 +4,7 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movies.settings")
 django.setup()
 
+from django.conf import settings
 
 from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
@@ -134,34 +135,27 @@ def output_data(output_file="ratings_data.xlsx"):
     """
 
     ratings = Rating.objects.select_related("user", "movie").all()
+    movie_metadata = {meta.movie_id: meta for meta in MovieMetaData.objects.all()}
 
     if not ratings.exists():
         print("No ratings data found.")
         return
 
-    # Collect data for the DataFrame
     data = []
-
     for rating in ratings:
-        movie_actors = MovieActor.objects.filter(movie=rating.movie).select_related("actor")
-
-        actors = ", ".join([movie_actor.actor.actor_name or "Unknown Actor" for movie_actor in movie_actors])
-        charaters = ", ".join([movie_actor.character_name or "Unknown Character" for movie_actor in movie_actors])
-
-        text = (
-            f"{rating.movie.original_title}, a {', '.join([genre.genre for genre in rating.movie.genres.all()])} movie "
-            f"in {', '.join([language.language for language in rating.movie.languages.all()])} from {rating.movie.year or 'an unknown year'}. "
-            f"Actors: {actors}. "
-            f"Characters: {charaters}. "
-            f"{rating.movie.overview or ''}"
-        )
+        metadata = movie_metadata.get(rating.movie.movie_id)  # Ensure correct key access
+        if metadata:
+            meta_features = [getattr(metadata, feature, None) for feature in settings.FEATURES]
+        else:
+            meta_features = [None] * len(settings.FEATURES)
 
         row = {
             "User": rating.user.username,
-            "Movie": text,
+            "Movie": rating.movie.original_title,
             "Rating": rating.rating,
         }
 
+        row.update({feature: value for feature, value in zip(settings.FEATURES, meta_features)})
         data.append(row)
 
     df = pd.DataFrame(data)
@@ -211,4 +205,4 @@ def remove_random_data():
 
 
 if __name__ == "__main__":
-    output_data(output_file=os.path.join(BASE_DIR, "movies/data/new_ratings_data.xlsx"))
+    output_data(output_file=os.path.join(BASE_DIR, "movies/data/ratings_data.xlsx"))

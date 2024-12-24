@@ -1,0 +1,22 @@
+{% block content %}
+    <section class="display-details">
+        <h2>{{ user_name }}</h2>
+        <p><strong>Email:</strong> {{ user_email }}</p>
+        <p><strong>Date Joined:</strong> {{ user_date_joined }}</p>
+        <p><strong>Is Friend:</strong> {{ user_is_friend }}</p>
+    </section>
+
+    {% if message %}
+        <div class="message {% if message_type == 'success' %}success-message{% else %}error-message{% endif %}">
+            <p>{{ message }}</p>
+        </div>
+    {% endif %}
+
+    <nav>
+        <p><a href="{% url 'users:user_search' %}" class="bold-link">Return to the User Search</a></p>
+    </nav>
+
+    <nav>
+        <p><a href="{% url 'users:user_add_friends' user_id %}" class="bold-link">Add friend</a></p>
+    </nav>
+{% endblock %}

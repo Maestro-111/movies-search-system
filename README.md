@@ -110,5 +110,4 @@ python generate_image_embeddings.py
 2. front-end (cont)
 3. Fix .dockerignore issue (e.g. not ignoring sqlite files)
 4. Continue updating friends section within users. Final goal is to have more info for recommendations
-5. Recreate embeds for text/images
-6. Issue with styles for user app.
+5. Issue with styles for user app.

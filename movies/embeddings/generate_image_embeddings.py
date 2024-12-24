@@ -20,7 +20,10 @@ from django.db.models import Q
 from movie.models import Movie
 
 from model_pipeline import get_model_pipeline
+from pathlib import Path
+import os
 
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 def delete_existing_embeddings():
     try:
@@ -50,7 +53,9 @@ def get_embedding(image_url, resnet, transform):
 
 
 def generate_and_save_embeddings():
-    with open("data/posters.csv", encoding="utf-8", errors="replace") as f:
+
+
+    with open(os.path.join(BASE_DIR, "movies/data/posters.csv"), encoding="utf-8", errors="replace") as f:
         df = pd.read_csv(f)
 
     resnet, transform = get_model_pipeline()
@@ -83,5 +88,5 @@ def generate_and_save_embeddings():
 
 if __name__ == "__main__":
     print("hello world")
-    # delete_existing_embeddings()
-    # generate_and_save_embeddings()
+    delete_existing_embeddings()
+    generate_and_save_embeddings()

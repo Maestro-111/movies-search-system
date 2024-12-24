@@ -199,38 +199,6 @@ def train_model(train_loader, val_loader, test_loader, stats):
     }
 
 
-def generate_recommendations_current_playlist(model, user_id, current_playlist, movie_vectors, top_n=10):
-    """
-    Generate recommendations based on the current playlist.
-    """
-    model.eval()  # Set model to evaluation mode
-
-    # Prepare user tensor
-    user_tensor = torch.tensor([user_id], dtype=torch.long)
-
-    # All candidate movies (excluding the current playlist)
-    all_movies = list(movie_vectors.keys())
-    candidate_movies = [movie for movie in all_movies if movie not in current_playlist]
-    movie_tensors = torch.tensor([movie_vectors[movie] for movie in candidate_movies], dtype=torch.float32)
-
-    # Aggregate predictions from all movies in the current playlist
-    aggregated_scores = torch.zeros(len(candidate_movies), dtype=torch.float32)
-
-    for playlist_movie in current_playlist:
-        for i, candidate_movie_vector in enumerate(movie_tensors):
-            candidate_movie_tensor = candidate_movie_vector.unsqueeze(0)  # Add batch dimension
-            with torch.no_grad():
-                output = model(user_tensor, candidate_movie_tensor)  # Predict rating for candidate
-                score = torch.argmax(output, dim=1).item() + 1  # Convert to rating scale
-                aggregated_scores[i] += score  # Aggregate the score
-
-    # Sort candidates by aggregated scores
-    sorted_indices = torch.argsort(aggregated_scores, descending=True)
-    recommended_movies = [candidate_movies[i] for i in sorted_indices[:top_n]]
-
-    return recommended_movies
-
-
 def main():
     train_loader, val_loader, test_loader, stats = get_batches()
     train_model(train_loader, val_loader, test_loader, stats)

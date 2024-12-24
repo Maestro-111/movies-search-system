@@ -6,6 +6,7 @@ from populate_movie_languages import populate_movie_languages
 from populate_movie_genres import populate_movie_genres
 from populate_actors import populate_actors
 from populate_movies_actors import populate_movie_actors
+from populate_user_profile import populate_user_profile
 
 if __name__ == "__main__":
     genres = populate_genres()
@@ -16,6 +17,7 @@ if __name__ == "__main__":
     movie_genres = populate_movie_genres()
     actors = populate_actors()
     movie_actors = populate_movie_actors()
+    populate_user_profile = populate_user_profile()
 
     movies.run()
     metadata.run()
@@ -25,3 +27,4 @@ if __name__ == "__main__":
     movie_genres.run()
     movie_languages.run()
     movie_actors.run()
+    populate_user_profile.run()

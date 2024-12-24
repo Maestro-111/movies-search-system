@@ -6,7 +6,7 @@
 }
 
 body {
-    display: flex;
+    /*display: flex;*/
     justify-content: center;
     align-items: center;
     height: 100vh;
@@ -100,14 +100,52 @@ button:active {
 
 
 /* Search Container */
+/*.search-container {*/
+/*    margin-bottom: 2em;*/
+/*}*/
+
 .search-container {
-    margin-bottom: 2em;
+    max-width: 800px; /* Adjust width if necessary */
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9f9f9;
 }
+
+.search-input-container {
+    flex: 1; /* Takes up remaining space */
+    margin-right: 15px; /* Adds spacing to the right of the input */
+}
+
+.search-input-container label {
+    display: block; /* Ensures the label is above the input */
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #333;
+}
+
+.search-input-container input {
+    width: 100%; /* Stretches input to fill the available space */
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    outline: none;
+}
+
+/*.form-row {*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    gap: 10px;*/
+/*}*/
 
 .form-row {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    align-items: center;
+    justify-content: space-between; /* Ensures spacing between elements */
+    gap: 15px; /* Adjusts spacing between input and upload button */
+    margin-bottom: 20px;
 }
 
 .search-btn {
@@ -150,14 +188,12 @@ hr {
     margin-top: 10px;
 }
 
-/* Loader */
 #loading {
     font-size: 16px;
     color: #555;
     text-align: center;
 }
 
-/* Navigation Link */
 nav {
     margin-top: 2em;
     text-align: center;
