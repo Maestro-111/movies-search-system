@@ -15,12 +15,33 @@
 {% block content %}
     <ul>
         {% for friend in friends %}
-            <li>{{ friend.username }}</li>
+            <li><a href="{{ friend.profile.get_absolute_url }}"> {{ friend.username }} </a></li>
         {% empty %}
             <li>You have no friends yet.</li>
         {% endfor %}
     </ul>
+
+    <!-- Pagination Controls -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if friends.has_previous %}
+                <a href="?page=1">&laquo; First</a>
+                <a href="?page={{ friends.previous_page_number }}">Previous</a>
+            {% endif %}
+
+            <span class="current-page">
+                Page {{ friends.number }} of {{ friends.paginator.num_pages }}
+            </span>
+
+            {% if friends.has_next %}
+                <a href="?page={{ friends.next_page_number }}">Next</a>
+                <a href="?page={{ friends.paginator.num_pages }}">Last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+
     <nav>
         <p><a href="{% url 'users:user_home' %}">Return to User Home</a></p>
     </nav>
 {% endblock %}
+

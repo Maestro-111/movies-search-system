@@ -22,6 +22,7 @@ MOVIE_DIM = 10
 EPOCHS = 50
 
 
+
 tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
 model = AutoModel.from_pretrained("bert-base-uncased")
 
@@ -41,7 +42,10 @@ def encode_text(text):
 
 
 def get_batches():
-    train_data, val_data, test_data, unique_movies, stats = create_df_chunks(os.path.join(BASE_DIR, "movies/data/new_ratings_data.xlsx"))
+
+    print(os.path.join(BASE_DIR, "data/ratings_data.xlsx"))
+
+    train_data, val_data, test_data, unique_movies, stats = create_df_chunks(os.path.join(BASE_DIR, "data/ratings_data.xlsx"))
 
     text_embeddings = {movie: encode_text(movie) for movie in unique_movies}
 
@@ -187,7 +191,7 @@ def train_model(train_loader, val_loader, test_loader, stats):
     print("Confusion Matrix:")
     print(cm)
 
-    torch.save(model.state_dict(), os.path.join(BASE_DIR, "movies/recommendation_model.pth"))
+    # torch.save(model.state_dict(), os.path.join(BASE_DIR, "movies/recommendation_model.pth"))
 
     return {
         "train_losses": train_losses,

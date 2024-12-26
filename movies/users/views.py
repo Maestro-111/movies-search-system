@@ -84,10 +84,13 @@ def show_user(request, username):
 
 @login_required
 def user_view_friends(request):
+
     friend_ids = Friendship.objects.filter(user=request.user).values_list("friend", flat=True)
     friends = User.objects.filter(id__in=friend_ids)
 
-    paginator = Paginator(friends, 10)  # Show 10 friends per page
+    users_with_profiles = friends.select_related("profile")
+
+    paginator = Paginator(users_with_profiles, 20)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 

@@ -67,7 +67,6 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     "playlist.apps.PlaylistConfig",
     "forum.apps.ForumConfig",
-    "embeddings.apps.EmbeddingsConfig",
     "debug_toolbar",
 ]
 

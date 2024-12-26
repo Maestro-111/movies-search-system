@@ -10,6 +10,7 @@ from torch.utils.data import Dataset
 
 
 def create_df_chunks(path):
+    print(path)
     df = pd.read_excel(path)
 
     count_users = len(df["User"].unique())

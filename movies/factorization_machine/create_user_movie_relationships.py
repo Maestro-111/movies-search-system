@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 
 
-from movie.models import Movie, Rating, MovieMetaData, MovieActor
+from movie.models import Movie, Rating, MovieMetaData, MovieActor, MovieGenres, MovieLanguages
 from playlist.models import Playlist
 
 import random
@@ -19,6 +19,10 @@ from django.db import transaction, IntegrityError
 import pandas as pd
 
 from pathlib import Path
+
+import random
+from django.db import transaction, IntegrityError
+from django.db.models import Q
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -56,37 +60,81 @@ def create_users(n):
 
 def create_populate_playlists(n_playlists, n_movies, users=None):
     """
-    Create n playlists for each user with random movies.
+    Create n playlists for each user with movies selected based on step-by-step filtering:
+    first by genre, then by year, and finally by language.
 
     Args:
-        n (int): Number of playlists to create for each user.
+        n_playlists (int): Number of playlists to create for each user.
+        n_movies (int): Number of movies to add to each playlist.
         users (QuerySet or list, optional): A list or queryset of users. If None, fetch all users.
-
-
     """
 
     if users is None:
         users = User.objects.all()  # Fetch all users if not provided
 
-    movies = list(Movie.objects.all())  # Fetch all movies
+    movies = Movie.objects.all()
 
-    if not movies:
+    if not movies.exists():
         print("No movies found in the database. Add some movies first.")
         return
 
-    for user in users:
-        for i in range(n_playlists):
-            playlist_name = f"Playlist_{user.username}_{i + 1}"
-            random_movies = random.sample(movies, min(n_movies, len(movies)))
+    genres = MovieGenres.objects.all()
+    years = movies.values_list("year", flat=True).distinct()
+    languages = MovieLanguages.objects.all()
 
-            try:
-                with transaction.atomic():
-                    playlist = Playlist.objects.create(name=playlist_name, user=user)
-                    playlist.movie.set(random_movies)
-            except IntegrityError as e:
-                print(f"Failed to create playlist for user {user.username}: {e}")
+    for user in users:
+
+        for i in range(n_playlists):
+
+            playlist_name = f"Playlist_{user.username}_{i + 1}"
+
+            random_genre = random.choice(genres) if genres.exists() else None
+            if random_genre:
+                genre_filtered_movies = movies.filter(genres=random_genre)
+            else:
+                genre_filtered_movies = movies
+
+            # Step 2: Filter by random year from the genre-filtered movies
+            available_years = genre_filtered_movies.values_list("year", flat=True).distinct()
+            random_year = random.choice(available_years) if available_years else None
+
+            if random_year:
+                year_filtered_movies = genre_filtered_movies.filter(year=random_year)
+            else:
+                year_filtered_movies = genre_filtered_movies
+
+            # Step 3: Filter by random language from the year-filtered movies
+            available_languages = year_filtered_movies.values_list("languages__language", flat=True).distinct()
+            available_languages = [language for language in available_languages if language]
+
+            language_weights = {lang: 9 if lang.lower() == "english" else 1 for lang in available_languages}
+
+            random_language = random.choices(
+                population=list(language_weights.keys()),
+                weights=list(language_weights.values()),
+                k=1
+            )[0] if available_languages else None
+
+            if random_language:
+                final_filtered_movies = year_filtered_movies.filter(languages__language=random_language)
+            else:
+                final_filtered_movies = year_filtered_movies
+
+            # Add up to n_movies from the final filtered movies
+            if final_filtered_movies.exists():
+                random_movies = random.sample(list(final_filtered_movies), min(len(final_filtered_movies), n_movies))
+
+                try:
+                    with transaction.atomic():
+                        playlist = Playlist.objects.create(name=playlist_name, user=user)
+                        playlist.movie.set(random_movies)
+                except IntegrityError as e:
+                    print(f"Failed to create playlist for user {user.username}: {e}")
+            else:
+                print(f"No movies found with the selected filters for user {user.username}.")
 
         print(f"Created {n_playlists} playlists for user: {user.username}")
+
 
 
 def assign_ratings_via_playlists(min_rating=1, max_rating=5):
@@ -142,20 +190,39 @@ def output_data(output_file="ratings_data.xlsx"):
         return
 
     data = []
+
     for rating in ratings:
-        metadata = movie_metadata.get(rating.movie.movie_id)  # Ensure correct key access
+
+        metadata = movie_metadata.get(rating.movie.movie_id)
+        movie = rating.movie
+
         if metadata:
             meta_features = [getattr(metadata, feature, None) for feature in settings.FEATURES]
         else:
             meta_features = [None] * len(settings.FEATURES)
 
+        movie_actors = MovieActor.objects.filter(movie=movie).select_related("actor")
+
+        actors = ", ".join([movie_actor.actor.actor_name or "Unknown Actor" for movie_actor in movie_actors])
+        charaters = ", ".join([movie_actor.character_name or "Unknown Character" for movie_actor in movie_actors])
+
+        text = (
+            f"{movie.original_title}, a {', '.join([genre.genre for genre in movie.genres.all()])} movie "
+            f"in {', '.join([language.language for language in movie.languages.all()])} from {movie.year or 'an unknown year'}. "
+            f"Actors: {actors}. "
+            f"Characters: {charaters}. "
+            f"{movie.overview or ''}"
+        )
+
         row = {
             "User": rating.user.username,
-            "Movie": rating.movie.original_title,
+            "Movie": text,
             "Rating": rating.rating,
         }
 
-        row.update({feature: value for feature, value in zip(settings.FEATURES, meta_features)})
+
+
+        # row.update({feature: value for feature, value in zip(settings.FEATURES, meta_features)})
         data.append(row)
 
     df = pd.DataFrame(data)
@@ -205,4 +272,10 @@ def remove_random_data():
 
 
 if __name__ == "__main__":
+    #
+    # create_users(70)
+    # create_populate_playlists(20, 15)
+    # assign_ratings_via_playlists()
+    #
+    # remove_random_data()
     output_data(output_file=os.path.join(BASE_DIR, "movies/data/ratings_data.xlsx"))
