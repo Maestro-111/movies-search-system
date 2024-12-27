@@ -1,6 +1,13 @@
 import numpy as np
 from nltk.tokenize import word_tokenize
 from django.conf import settings
+import joblib
+import pandas as pd
+from pathlib import Path
+import os
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 def produce_recommendations_1(cur_row_metadata_values, metadata_rows):
@@ -28,7 +35,8 @@ def produce_recommendations_1(cur_row_metadata_values, metadata_rows):
     return recommended_ids.tolist()
 
 
-def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, alpha=0.95):
+def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, metadata_name, alpha=0.95, user=None):
+
     """
     Produce movie recommendations using cosine similarity and user ratings.
     :param cur_row_metadata_values: Array of current movie features.
@@ -50,6 +58,8 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings
 
     meta_ids are just ids of each movie
     """
+
+    print(user)
 
     meta_ids, meta_matrix = zip(*metadata_rows)
     meta_matrix = np.array(meta_matrix)
@@ -90,19 +100,42 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings
     combined_score= α×cosine_similarity+(1−α)×user_rating
     """
 
+    ranking_model = joblib.load(os.path.join(BASE_DIR, "movies/factorization_machine/best_pipeline.pkl"))
+
     for i, movie_id in enumerate(meta_ids):
-        # Get user rating for this movie if available, otherwise default to neutral rating (e.g., 0.5)
-        user_rating = user_ratings.get(movie_id, 2.5)  # get rating for a movie for a particular user. If not rating set it to 2.5 (middle)
 
-        # Combine cosine similarity with user rating
-        combined_score = alpha * cosine_similarities[i] + (1 - alpha) * user_rating
-        combined_scores.append((movie_id, combined_score))
+        user_rating = user_ratings.get(movie_id, 2.5)
 
-    # Sort by combined score in descending order
+        if not user:
+            combined_score = alpha * cosine_similarities[i] + (1 - alpha) * user_rating
+            predicted_rank = None
+        else:
+
+            try:
+                feature_row = pd.DataFrame([{
+                    "User": str(user.id),
+                    "Movie": str(movie_id),
+                    **{f"{metadata_name[j]}": meta_matrix[i][j] for j in range(len(metadata_name))}
+                }])
+
+                feature_row.fillna('Unknown', inplace=True)
+
+                predicted_rank = ranking_model.predict(feature_row)[0]
+                combined_score = cosine_similarities[i]
+
+            except Exception as e:
+                combined_score = -float('inf')
+                predicted_rank = -float('inf')
+
+        combined_scores.append((movie_id, combined_score, predicted_rank))
+
     combined_scores.sort(key=lambda x: -x[1])
 
-    # Extract top 10 recommended movie IDs
-    recommended_ids = [movie_id for movie_id, score in combined_scores[:10]]
+    if user:
+        combined_scores = combined_scores[:100]
+        combined_scores.sort(key=lambda x: -x[2])
+
+    recommended_ids = [movie_id for movie_id, score, rank in combined_scores[:10]]
 
     return recommended_ids
 

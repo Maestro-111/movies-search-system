@@ -136,35 +136,86 @@ def create_populate_playlists(n_playlists, n_movies, users=None):
         print(f"Created {n_playlists} playlists for user: {user.username}")
 
 
-
 def assign_ratings_via_playlists(min_rating=1, max_rating=5):
     """
-    Assign random ratings to movies for each user based on their playlists.
-
-    Args:
-        min_rating (int): Minimum rating value (inclusive).
-        max_rating (int): Maximum rating value (inclusive).
+    Assign ratings to movies based on user preferences and movie characteristics.
+    Uses a more realistic rating generation approach based on user-genre affinities
+    and movie metadata.
     """
 
-    users = User.objects.filter(username__startswith="user_")  # Only target created users
+    users = User.objects.filter(username__startswith="user_")
 
     if not users.exists():
         print("No users found to assign ratings.")
         return
 
+    # Generate user preferences
+    user_preferences = {}
+    for user in users:
+
+        genre_preferences = {
+            genre.genre: random.uniform(0.5, 1.5)  # Preference multiplier
+            for genre in MovieGenres.objects.all()
+        }
+
+        language_preferences = {
+            lang.language: random.uniform(0.8, 1.2)
+            for lang in MovieLanguages.objects.all()
+        }
+
+        if 'English' in language_preferences:
+            language_preferences['English'] *= 1.2
+
+        user_preferences[user.id] = {
+            'genres': genre_preferences,
+            'languages': language_preferences,
+            'year_preference': random.uniform(-0.3, 0.3),  # Preference for newer/older movies
+            'base_rating': random.uniform(3, 4)  # User's baseline rating tendency
+        }
+
+    current_year = 2024
+
     with transaction.atomic():
+
         for user in users:
+
             playlists = Playlist.objects.filter(user=user)
             movies = set(movie for playlist in playlists for movie in playlist.movie.all())
 
             if not movies:
-                print(f"No movies found in playlists for user: {user.username}")
                 continue
 
-            for movie in movies:
-                rating_value = random.randint(min_rating, max_rating)  # Random rating
+            prefs = user_preferences[user.id]
 
-                Rating.objects.update_or_create(user=user, movie=movie, defaults={"rating": rating_value})
+            for movie in movies:
+
+                rating_value = prefs['base_rating']
+
+                genre_multiplier = 1.0
+                for genre in movie.genres.all():
+                    genre_multiplier *= prefs['genres'].get(genre.genre, 1.0)
+
+                rating_value *= (genre_multiplier ** 0.5)
+
+                language_multiplier = 1.0
+                for language in movie.languages.all():
+                    language_multiplier *= prefs['languages'].get(language.language, 1.0)
+
+                rating_value *= (language_multiplier ** 0.3)
+
+                if movie.year:
+                    years_old = current_year - movie.year
+                    year_factor = 1 + (prefs['year_preference'] * (years_old / 50))
+                    rating_value *= year_factor
+
+                rating_value += random.uniform(-0.5, 0.5)
+                rating_value = round(max(min(rating_value, max_rating), min_rating))
+
+                Rating.objects.update_or_create(
+                    user=user,
+                    movie=movie,
+                    defaults={"rating": rating_value}
+                )
 
             print(f"Assigned ratings for {len(movies)} movies to user: {user.username}")
 
@@ -216,13 +267,13 @@ def output_data(output_file="ratings_data.xlsx"):
 
         row = {
             "User": rating.user.username,
-            "Movie": text,
+            "Movie": rating.movie.movie_id,
             "Rating": rating.rating,
         }
 
 
 
-        # row.update({feature: value for feature, value in zip(settings.FEATURES, meta_features)})
+        row.update({feature: value for feature, value in zip(settings.FEATURES, meta_features)})
         data.append(row)
 
     df = pd.DataFrame(data)
@@ -273,9 +324,9 @@ def remove_random_data():
 
 if __name__ == "__main__":
     #
-    # create_users(70)
-    # create_populate_playlists(20, 15)
+    # create_users(100)
+    # create_populate_playlists(40, 20)
     # assign_ratings_via_playlists()
-    #
+
     # remove_random_data()
     output_data(output_file=os.path.join(BASE_DIR, "movies/data/ratings_data.xlsx"))

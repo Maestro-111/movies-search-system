@@ -7,8 +7,8 @@ from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from django.core.cache import cache
 from sentence_transformers import SentenceTransformer
 
-from recommendations import produce_recommendations
-from recommendations import get_combined_features
+from factorization_machine.recommendations import produce_recommendations
+from factorization_machine.recommendations import get_combined_features
 
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
@@ -172,6 +172,9 @@ def show_movie(request, movie_id):
     language_in_movie = languages.values_list("language", flat=True)
 
     movie_actors = MovieActor.objects.filter(movie=movie).select_related("actor")
+    meta_data_names = [field for field in settings.FEATURES]
+
+    print(meta_data_names)
 
     if not recommended_ids:
         all_metadata = list(MovieMetaData.objects.all().select_related("movie"))
@@ -193,7 +196,7 @@ def show_movie(request, movie_id):
             if meta.movie_id != movie.movie_id
         ]
 
-        recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings)
+        recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, metadata_name=meta_data_names)
         cache.set(cache_key, recommended_ids, timeout=300)
 
     recommended_movies = []

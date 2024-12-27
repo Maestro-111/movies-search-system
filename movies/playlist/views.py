@@ -8,8 +8,8 @@ from .models import Playlist
 from .forms import PlaylistForm, RatingForm
 
 from django.conf import settings
-from recommendations import produce_recommendations
-from recommendations import get_combined_features
+from factorization_machine.recommendations import produce_recommendations
+from factorization_machine.recommendations import get_combined_features
 
 from gensim.models import Word2Vec
 from django.db import transaction
@@ -193,10 +193,14 @@ def add_movie_to_playlist(request, movie_id):
     )
 
 
-def group_recommendation(request, selected_movies, wordvec):
+def group_recommendation(request, selected_movies, wordvec, user):
 
     seen_titles = {movie.original_title for movie in selected_movies}
     recommendations = set()
+
+    meta_data_names = [field for field in settings.FEATURES]
+
+    print(meta_data_names)
 
     all_metadata = list(MovieMetaData.objects.all().select_related("movie"))
     all_metadata_dict = {meta.movie_id: meta for meta in all_metadata}
@@ -220,11 +224,7 @@ def group_recommendation(request, selected_movies, wordvec):
             if meta.movie_id != movie.movie_id
         ]
 
-        recommended_movie_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings)
-
-        """
-        Rank?
-        """
+        recommended_movie_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, metadata_name=meta_data_names, user=user)
 
         recommended_movies = [Movie.objects.get(movie_id=id) for id in recommended_movie_ids if id in all_metadata_dict and all_metadata_dict[id].movie.original_title not in seen_titles]
 
@@ -252,7 +252,7 @@ def get_recommendation_for_playlist(request, playlist_id):
             {"error_message": "You do not have any movies in your playlists"},
         )
 
-    recommendations = group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec)
+    recommendations = group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec, user=request.user)
     return render(request, "playlist/show_recommendations.html", {"result": recommendations})
 
 
@@ -284,5 +284,5 @@ def get_my_recommendations(request):
             {"error_message": "You do not have any movies in your playlists"},
         )
 
-    recommendations = group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec)
+    recommendations = group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec, user=request.user)
     return render(request, "playlist/show_recommendations.html", {"result": recommendations})
