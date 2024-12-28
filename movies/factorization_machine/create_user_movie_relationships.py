@@ -13,8 +13,7 @@ from django.utils.crypto import get_random_string
 from movie.models import Movie, Rating, MovieMetaData, MovieActor, MovieGenres, MovieLanguages
 from playlist.models import Playlist
 
-import random
-from django.db import transaction, IntegrityError
+from django.db.models import Avg
 
 import pandas as pd
 
@@ -136,11 +135,33 @@ def create_populate_playlists(n_playlists, n_movies, users=None):
         print(f"Created {n_playlists} playlists for user: {user.username}")
 
 
+def compute_genre_averages():
+
+    """
+    Compute the mean budget and popularity for each genre.
+    """
+
+    genre_averages = {}
+    genres = MovieGenres.objects.all()
+
+    for genre in genres:
+
+        movies_in_genre = Movie.objects.filter(genres=genre)
+        metadata = MovieMetaData.objects.filter(movie__in=movies_in_genre)
+
+        genre_averages[genre.genre] = {
+            "avg_budget": metadata.aggregate(Avg("budget"))["budget__avg"] or 0,
+            "avg_popularity": metadata.aggregate(Avg("popularity"))["popularity__avg"] or 0,
+        }
+
+    return genre_averages
+
+
 def assign_ratings_via_playlists(min_rating=1, max_rating=5):
+
     """
     Assign ratings to movies based on user preferences and movie characteristics.
-    Uses a more realistic rating generation approach based on user-genre affinities
-    and movie metadata.
+    Extended to include budget and popularity preferences.
     """
 
     users = User.objects.filter(username__startswith="user_")
@@ -149,12 +170,12 @@ def assign_ratings_via_playlists(min_rating=1, max_rating=5):
         print("No users found to assign ratings.")
         return
 
-    # Generate user preferences
     user_preferences = {}
+
     for user in users:
 
         genre_preferences = {
-            genre.genre: random.uniform(0.5, 1.5)  # Preference multiplier
+            genre.genre: random.uniform(0.5, 1.5)
             for genre in MovieGenres.objects.all()
         }
 
@@ -163,16 +184,20 @@ def assign_ratings_via_playlists(min_rating=1, max_rating=5):
             for lang in MovieLanguages.objects.all()
         }
 
-        if 'English' in language_preferences:
-            language_preferences['English'] *= 1.2
+        budget_preference = random.uniform(0.8, 1.2)
+        popularity_preference = random.uniform(0.8, 1.2)
 
         user_preferences[user.id] = {
             'genres': genre_preferences,
             'languages': language_preferences,
-            'year_preference': random.uniform(-0.3, 0.3),  # Preference for newer/older movies
-            'base_rating': random.uniform(3, 4)  # User's baseline rating tendency
+            'budget': budget_preference,
+            'popularity': popularity_preference,
+            'year_preference': random.uniform(-0.3, 0.3),
+            'base_rating': random.uniform(1, 5),
         }
 
+
+    genre_averages = compute_genre_averages()
     current_year = 2024
 
     with transaction.atomic():
@@ -188,27 +213,44 @@ def assign_ratings_via_playlists(min_rating=1, max_rating=5):
             prefs = user_preferences[user.id]
 
             for movie in movies:
-
                 rating_value = prefs['base_rating']
 
+                # Genre Multiplier
                 genre_multiplier = 1.0
                 for genre in movie.genres.all():
                     genre_multiplier *= prefs['genres'].get(genre.genre, 1.0)
-
                 rating_value *= (genre_multiplier ** 0.5)
 
+                # Language Multiplier
                 language_multiplier = 1.0
                 for language in movie.languages.all():
                     language_multiplier *= prefs['languages'].get(language.language, 1.0)
-
                 rating_value *= (language_multiplier ** 0.3)
 
+                # Year Factor
                 if movie.year:
                     years_old = current_year - movie.year
                     year_factor = 1 + (prefs['year_preference'] * (years_old / 50))
                     rating_value *= year_factor
 
-                rating_value += random.uniform(-0.5, 0.5)
+                # Budget and Popularity Adjustment
+                budget_avg = sum(
+                    genre_averages[genre.genre]["avg_budget"]
+                    for genre in movie.genres.all()
+                    if genre.genre in genre_averages
+                ) / len(movie.genres.all() or [1])  # Avoid division by zero
+
+                popularity_avg = sum(
+                    genre_averages[genre.genre]["avg_popularity"]
+                    for genre in movie.genres.all()
+                    if genre.genre in genre_averages
+                ) / len(movie.genres.all() or [1])
+
+                rating_value *= (1 + prefs['budget'] * budget_avg)
+                rating_value *= (1 + prefs['popularity'] * popularity_avg)
+
+                # Random Adjustment and Clamp
+                rating_value += random.uniform(-0.2, 0.2)
                 rating_value = round(max(min(rating_value, max_rating), min_rating))
 
                 Rating.objects.update_or_create(
@@ -220,6 +262,7 @@ def assign_ratings_via_playlists(min_rating=1, max_rating=5):
             print(f"Assigned ratings for {len(movies)} movies to user: {user.username}")
 
     print("Ratings assigned to movies via playlists successfully.")
+
 
 
 def output_data(output_file="ratings_data.xlsx"):
@@ -324,9 +367,9 @@ def remove_random_data():
 
 if __name__ == "__main__":
     #
-    # create_users(100)
-    # create_populate_playlists(40, 20)
-    # assign_ratings_via_playlists()
+    create_users(100)
+    create_populate_playlists(40, 20)
+    assign_ratings_via_playlists()
 
     # remove_random_data()
     output_data(output_file=os.path.join(BASE_DIR, "movies/data/ratings_data.xlsx"))

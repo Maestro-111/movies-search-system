@@ -24,7 +24,7 @@ import warnings
 import re
 import os
 
-from config.logger_config import logger
+from config.logger_config import system_logger
 
 from langdetect import detect
 import json
@@ -52,6 +52,8 @@ def chat_bot_request(request):
 
         print(movie_ids)
         print(movies)
+
+        system_logger.info(f"Best matches for the {user_message} : {[movie.original_title for movie in movies]}")
 
         return render(request, "movie/search_movie.html", {"movies": movies})
 
@@ -83,7 +85,12 @@ def movie_search(request):
         with open(file_path, "r") as f:
             language_config = json.load(f)
 
-        language = detect(query)
+        try:
+            language = detect(query)
+        except Exception as e:
+            system_logger.error(f"Could not detect language: {e}")
+            language = "english"
+
         pg_config = language_config.get(language, "english")  # Fallback to English if language is not found
 
         # Perform Full Text Search
@@ -99,7 +106,7 @@ def movie_search(request):
 
         # Limit results
         movies = list(movies[:10])
-        logger.info(f"best mathces for {query} are ': {[movie.original_title for movie in movies]}")
+        system_logger.info(f"best mathces for {query} are ': {[movie.original_title for movie in movies]}")
 
     if image:
         posters_collection = chroma_client.get_collection("posters_collection")
@@ -133,14 +140,14 @@ def movie_search(request):
 
                     matching_movies = Movie.objects.filter(Q(original_title__icontains=movie_name) & Q(year=year))
 
-                    logger.info(f"ResNet Search results': {[movie.original_title for movie in matching_movies]}")
+                    system_logger.info(f"ResNet Search results': {[movie.original_title for movie in matching_movies]}")
 
                     if matching_movies.exists():
                         movies.extend(list(matching_movies))
                     else:
-                        logger.info(f"No movies found with the title: {title}")
+                        system_logger.info(f"No movies found with the title: {title}")
                 except Exception as e:
-                    logger.exception(f"Error retrieving movie with title {title}: {e}")
+                    system_logger.exception(f"Error retrieving movie with title {title}: {e}")
 
         except UnidentifiedImageError:
             return render(request, "movie/search_movie.html", {"error": "Invalid image format"})
@@ -174,8 +181,6 @@ def show_movie(request, movie_id):
     movie_actors = MovieActor.objects.filter(movie=movie).select_related("actor")
     meta_data_names = [field for field in settings.FEATURES]
 
-    print(meta_data_names)
-
     if not recommended_ids:
         all_metadata = list(MovieMetaData.objects.all().select_related("movie"))
         all_metadata_dict = {meta.movie_id: meta for meta in all_metadata}
@@ -196,7 +201,10 @@ def show_movie(request, movie_id):
             if meta.movie_id != movie.movie_id
         ]
 
-        recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, metadata_name=meta_data_names)
+        user = request.user
+        user = user if user.is_authenticated else None
+
+        recommended_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, metadata_name=meta_data_names, user=user)
         cache.set(cache_key, recommended_ids, timeout=300)
 
     recommended_movies = []

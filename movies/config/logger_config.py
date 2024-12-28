@@ -3,7 +3,7 @@ import os
 
 os.makedirs("logs", exist_ok=True)
 
-LOGGING_CONFIG = {
+GENERAL_LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
@@ -26,10 +26,10 @@ LOGGING_CONFIG = {
         "console": {
             "class": "logging.StreamHandler",
             "level": "INFO",
-            "formatter": "color",  # Use the 'color' formatter
+            "formatter": "color",
             "stream": "ext://sys.stdout",
         },
-        "file": {
+        "file_main": {
             "class": "logging.FileHandler",
             "level": "INFO",
             "formatter": "standard",
@@ -37,15 +37,36 @@ LOGGING_CONFIG = {
             "mode": "a",
             "encoding": "utf-8",
         },
+        "file_model": {
+            "class": "logging.FileHandler",
+            "level": "INFO",
+            "formatter": "standard",
+            "filename": "logs/models.log",
+            "mode": "a",
+            "encoding": "utf-8",
+        },
     },
     "loggers": {
         "movies-search-system": {
-            "handlers": ["console", "file"],
+            "handlers": ["console", "file_main"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "model-logger": {
+            "handlers": ["console", "file_model"],
             "level": "INFO",
             "propagate": False,
         },
     },
 }
 
-logging.config.dictConfig(LOGGING_CONFIG)
-logger = logging.getLogger("movies-search-system")
+logging.config.dictConfig(GENERAL_LOGGING_CONFIG)
+
+
+system_logger = logging.getLogger("movies-search-system")
+model_logger = logging.getLogger("model-logger")
+
+
+system_logger.info("This is an info log for the system logger.")
+model_logger.debug("This is a debug log for the model logger.")
+

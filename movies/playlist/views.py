@@ -193,19 +193,18 @@ def add_movie_to_playlist(request, movie_id):
     )
 
 
-def group_recommendation(request, selected_movies, wordvec, user):
+def group_recommendation(selected_movies, wordvec, user):
 
     seen_titles = {movie.original_title for movie in selected_movies}
     recommendations = set()
 
     meta_data_names = [field for field in settings.FEATURES]
 
-    print(meta_data_names)
 
     all_metadata = list(MovieMetaData.objects.all().select_related("movie"))
     all_metadata_dict = {meta.movie_id: meta for meta in all_metadata}
 
-    user_ratings = {rating.movie.movie_id: rating.rating for rating in Rating.objects.filter(user=request.user)}
+    user_ratings = {rating.movie.movie_id: rating.rating for rating in Rating.objects.filter(user=user)}
 
     for movie in selected_movies:
         cur_metadata = all_metadata_dict.get(movie.movie_id)
@@ -225,7 +224,6 @@ def group_recommendation(request, selected_movies, wordvec, user):
         ]
 
         recommended_movie_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, metadata_name=meta_data_names, user=user)
-
         recommended_movies = [Movie.objects.get(movie_id=id) for id in recommended_movie_ids if id in all_metadata_dict and all_metadata_dict[id].movie.original_title not in seen_titles]
 
         sample_size = min(random.randint(1, len(recommended_movies)), 10)

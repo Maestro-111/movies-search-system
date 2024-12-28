@@ -15,6 +15,8 @@ import joblib
 import os
 from pathlib import Path
 
+from config.logger_config import model_logger
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
@@ -152,12 +154,14 @@ class MovieRatingXGB:
             cv=3
         )
 
-        print("Performing random search for best parameters...")
+        model_logger.info("Performing random search for best parameters...")
+
         random_search.fit(df_train[self.features], df_train[self.target])
 
         best_params = {k.replace('classifier__', ''): v
                        for k, v in random_search.best_params_.items()}
-        print(f"Best parameters found: {best_params}")
+
+        model_logger.info(f"Best parameters found: {best_params}")
 
         best_model = XGBClassifier(
             **best_params,
@@ -167,7 +171,8 @@ class MovieRatingXGB:
 
         final_pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", best_model)])
 
-        print("Training final model...")
+        model_logger.info("Training final model...")
+
         final_pipeline.fit(df_train[self.features], df_train[self.target])
 
         def evaluate_predictions(y_true, y_pred, set_name):
@@ -175,13 +180,13 @@ class MovieRatingXGB:
             y_true = y_true + 1
             y_pred = y_pred + 1
 
-            print(f"\n{set_name} Performance:")
-            print(f"Accuracy: {accuracy_score(y_true, y_pred):.3f}")
-            print(f"Precision: {precision_score(y_true, y_pred, average='weighted'):.3f}")
-            print(f"Recall: {recall_score(y_true, y_pred, average='weighted'):.3f}")
-            print(f"F1 Score: {f1_score(y_true, y_pred, average='weighted'):.3f}")
-            print("\nClassification Report:")
-            print(classification_report(y_true, y_pred))
+            model_logger.info(f"\n{set_name} Performance:")
+            model_logger.info(f"Accuracy: {accuracy_score(y_true, y_pred):.3f}")
+            model_logger.info(f"Precision: {precision_score(y_true, y_pred, average='weighted'):.3f}")
+            model_logger.info(f"Recall: {recall_score(y_true, y_pred, average='weighted'):.3f}")
+            model_logger.info(f"F1 Score: {f1_score(y_true, y_pred, average='weighted'):.3f}")
+            model_logger.info("\nClassification Report:")
+            model_logger.info(classification_report(y_true, y_pred))
 
         for df_eval, name in [(df_train, "Training"),
                               (df_validation, "Validation"),
@@ -193,9 +198,5 @@ class MovieRatingXGB:
             joblib.dump(final_pipeline, os.path.join(BASE_DIR, 'movies/best_pipeline.pkl'))
 
         return final_pipeline
-
-
-    def predict(self,X,y):
-        pass
 
 

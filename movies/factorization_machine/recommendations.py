@@ -5,6 +5,7 @@ import joblib
 import pandas as pd
 from pathlib import Path
 import os
+from config.logger_config import system_logger
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -103,13 +104,24 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings
     ranking_model = joblib.load(os.path.join(BASE_DIR, "movies/factorization_machine/best_pipeline.pkl"))
 
     for i, movie_id in enumerate(meta_ids):
-
         user_rating = user_ratings.get(movie_id, 2.5)
 
         if not user:
             combined_score = alpha * cosine_similarities[i] + (1 - alpha) * user_rating
-            predicted_rank = None
         else:
+            combined_score = cosine_similarities[i]
+
+        combined_scores.append((movie_id, combined_score, i))
+
+    combined_scores.sort(key=lambda x: -x[1])
+
+    if user:
+        system_logger.info(f"doing ranking for user {user}")
+
+        combined_scores = combined_scores[:100]
+        ranked_movies = []
+
+        for movie_id, _, i in combined_scores:
 
             try:
                 feature_row = pd.DataFrame([{
@@ -119,23 +131,20 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings
                 }])
 
                 feature_row.fillna('Unknown', inplace=True)
-
                 predicted_rank = ranking_model.predict(feature_row)[0]
-                combined_score = cosine_similarities[i]
 
             except Exception as e:
-                combined_score = -float('inf')
+                system_logger.exception(f"Exception while ranking {movie_id}: {e}")
                 predicted_rank = -float('inf')
 
-        combined_scores.append((movie_id, combined_score, predicted_rank))
+            ranked_movies.append((movie_id, predicted_rank))
 
-    combined_scores.sort(key=lambda x: -x[1])
+        ranked_movies.sort(key=lambda x: -x[1])
+        recommended_ids = [movie_id for movie_id, _ in ranked_movies[:10]]
 
-    if user:
-        combined_scores = combined_scores[:100]
-        combined_scores.sort(key=lambda x: -x[2])
-
-    recommended_ids = [movie_id for movie_id, score, rank in combined_scores[:10]]
+    else:
+        system_logger.info(f"skipping ranking, no user")
+        recommended_ids = [movie_id for movie_id, _, _ in combined_scores[:10]]
 
     return recommended_ids
 
