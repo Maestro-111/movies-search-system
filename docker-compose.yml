@@ -10,7 +10,7 @@ services:
       - redis
     environment:
       - DEBUG=True
-      - DJANGO_SETTINGS_MODULE=movies.settings  # Replace with your actual settings module
+      - DJANGO_SETTINGS_MODULE=movies.settings
 
   db:
     image: postgres:15

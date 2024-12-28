@@ -111,3 +111,6 @@ python generate_image_embeddings.py
 3. Fix .dockerignore issue (e.g. not ignoring sqlite files)
 4. Continue updating friends section within users. Final goal is to have more info for recommendations
 5. Issue with styles for user app.
+6. Ranking Model overfit
+7. Configure computation backstage
+8. logs location issue

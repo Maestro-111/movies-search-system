@@ -1,3 +1,5 @@
+import json
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
@@ -10,10 +12,13 @@ from .forms import PlaylistForm, RatingForm
 from django.conf import settings
 from factorization_machine.recommendations import produce_recommendations
 from factorization_machine.recommendations import get_combined_features
+from  factorization_machine.precompute_recommendations import group_recommendation
 
 from gensim.models import Word2Vec
 from django.db import transaction
 import random
+
+from django.core.cache import cache
 
 
 # Create your views here.
@@ -193,64 +198,41 @@ def add_movie_to_playlist(request, movie_id):
     )
 
 
-def group_recommendation(selected_movies, wordvec, user):
-
-    seen_titles = {movie.original_title for movie in selected_movies}
-    recommendations = set()
-
-    meta_data_names = [field for field in settings.FEATURES]
-
-
-    all_metadata = list(MovieMetaData.objects.all().select_related("movie"))
-    all_metadata_dict = {meta.movie_id: meta for meta in all_metadata}
-
-    user_ratings = {rating.movie.movie_id: rating.rating for rating in Rating.objects.filter(user=user)}
-
-    for movie in selected_movies:
-        cur_metadata = all_metadata_dict.get(movie.movie_id)
-
-        if not cur_metadata:
-            continue
-
-        cur_row_metadata_values = get_combined_features(cur_metadata, movie.overview, wordvec)
-
-        metadata_rows = [
-            (
-                meta.movie_id,
-                get_combined_features(meta, all_metadata_dict[meta.movie_id].movie.overview, wordvec),
-            )
-            for meta in all_metadata
-            if meta.movie_id != movie.movie_id
-        ]
-
-        recommended_movie_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, metadata_name=meta_data_names, user=user)
-        recommended_movies = [Movie.objects.get(movie_id=id) for id in recommended_movie_ids if id in all_metadata_dict and all_metadata_dict[id].movie.original_title not in seen_titles]
-
-        sample_size = min(random.randint(1, len(recommended_movies)), 10)
-        recommendations.update(random.sample(recommended_movies, k=sample_size))
-
-    return list(recommendations)
-
 
 @login_required
 def get_recommendation_for_playlist(request, playlist_id):
+
     """
     get recommendations for a user for based on all exact playlist
     """
 
-    wordvec = Word2Vec.load(str(settings.MODEL_DIR))
-    playlist = Playlist.objects.get(id=playlist_id)
+    cache_key = f"{request.user.id}_{playlist_id}"
+    recommendations = cache.get(cache_key)
 
-    selected_movies = set(playlist.movie.all())
+    print(cache_key)
+    print(recommendations)
 
-    if not selected_movies:
-        return render(
-            request,
-            "playlist/show_recommendations.html",
-            {"error_message": "You do not have any movies in your playlists"},
-        )
+    if recommendations:
 
-    recommendations = group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec, user=request.user)
+        movie_ids = json.loads(recommendations)
+        recommendations = Movie.objects.filter(movie_id__in=movie_ids)
+
+    else:
+
+        wordvec = Word2Vec.load(str(settings.MODEL_DIR))
+        playlist = Playlist.objects.get(id=playlist_id)
+
+        selected_movies = set(playlist.movie.all())
+
+        if not selected_movies:
+            return render(
+                request,
+                "playlist/show_recommendations.html",
+                {"error_message": "You do not have any movies in your playlists"},
+            )
+
+        recommendations = group_recommendation(selected_movies=selected_movies, wordvec=wordvec, user=request.user)
+
     return render(request, "playlist/show_recommendations.html", {"result": recommendations})
 
 
@@ -282,5 +264,5 @@ def get_my_recommendations(request):
             {"error_message": "You do not have any movies in your playlists"},
         )
 
-    recommendations = group_recommendation(request, selected_movies=selected_movies, wordvec=wordvec, user=request.user)
+    recommendations = group_recommendation(selected_movies=selected_movies, wordvec=wordvec, user=request.user)
     return render(request, "playlist/show_recommendations.html", {"result": recommendations})
