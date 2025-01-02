@@ -21,7 +21,6 @@ from pathlib import Path
 
 import random
 from django.db import transaction, IntegrityError
-from django.db.models import Q
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 

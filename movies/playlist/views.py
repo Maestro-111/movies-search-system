@@ -16,7 +16,8 @@ from  factorization_machine.precompute_recommendations import group_recommendati
 
 from gensim.models import Word2Vec
 from django.db import transaction
-import random
+
+from django.core.paginator import Paginator
 
 from django.core.cache import cache
 
@@ -233,7 +234,17 @@ def get_recommendation_for_playlist(request, playlist_id):
 
         recommendations = group_recommendation(selected_movies=selected_movies, wordvec=wordvec, user=request.user)
 
-    return render(request, "playlist/show_recommendations.html", {"result": recommendations})
+        movie_ids = [movie.movie_id for movie in recommendations]
+        cache.set(cache_key, json.dumps(movie_ids), timeout=300)
+
+    paginator = Paginator(recommendations, 10)
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {"result": page_obj}
+
+    return render(request, "playlist/show_recommendations.html", context=context)
 
 
 @login_required

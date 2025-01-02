@@ -1,8 +1,9 @@
-
+from imblearn.under_sampling._prototype_selection._tomek_links import TomekLinks
 from sklearn.compose._column_transformer import ColumnTransformer
 from sklearn.pipeline import Pipeline
+
 from sklearn.preprocessing._encoders import OneHotEncoder
-from xgboost import XGBClassifier
+from xgboost import XGBClassifier,callback
 
 from scipy.stats import uniform, randint
 
@@ -16,8 +17,29 @@ import os
 from pathlib import Path
 
 from config.logger_config import model_logger
+import matplotlib.pyplot as plt
+
+from imblearn.over_sampling import SMOTE
+from imblearn.pipeline import Pipeline as ImbPipeline
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+
+
+class EvalHistory(callback.TrainingCallback):
+
+    def __init__(self):
+        self.history = {}
+
+    def after_iteration(self, model, epoch, evals_log):
+        for key, metrics in evals_log.items():
+            for metric_name, value in metrics.items():
+                if key not in self.history:
+                    self.history[key] = {}
+                if metric_name not in self.history[key]:
+                    self.history[key][metric_name] = []
+                self.history[key][metric_name].append(value[-1])
+        return False
 
 
 class CustomEarlyStopping:
@@ -64,15 +86,15 @@ class MovieRatingXGB:
     """
 
     param_grid = {
-        'n_estimators': [100],
-        'max_depth': randint(3, 8),
+        'n_estimators': [80],
+        'max_depth': [2],  #randint(3, 8),
         'learning_rate': uniform(0.01, 0.2),
-        'subsample': uniform(0.7, 0.3),
+        'subsample': [1],
         'colsample_bytree': uniform(0.7, 0.3),
-        'min_child_weight': randint(1, 7),
-        'gamma': uniform(0, 0.5),
-        'reg_alpha': uniform(0, 1),
-        'reg_lambda': uniform(0, 1),
+        'min_child_weight': randint(5, 30),
+        'gamma': [0,1,5],
+        'reg_alpha': uniform(0, 50),
+        'reg_lambda': uniform(0, 50),
     }
 
     def __init__(self, df, target:str, test_size=0.2, val_size=0.1,
@@ -117,7 +139,7 @@ class MovieRatingXGB:
         numerical_cols = self.features.difference(categorical_cols + [self.target])
 
         preprocessor = ColumnTransformer(
-            transformers=[
+            transformers = [
                 ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols),
                 ("num", "passthrough", numerical_cols),
             ]
@@ -126,10 +148,11 @@ class MovieRatingXGB:
         return df_train, df_validation, df_test, preprocessor
 
     def train(self):
-        """Train the model and evaluate performance"""
+
+        """Train the model and evaluate performance with SMOTE"""
+
         df_train, df_validation, df_test, preprocessor = self.prepare_data()
 
-        # Adjust target values to 0-based indexing for XGBoost
         df_train = df_train.copy()
         df_validation = df_validation.copy()
         df_test = df_test.copy()
@@ -138,45 +161,68 @@ class MovieRatingXGB:
         df_validation[self.target] = df_validation[self.target] - 1
         df_test[self.target] = df_test[self.target] - 1
 
-        base_model = XGBClassifier(objective='multi:softmax', num_class=5)
-        pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", base_model)])
+        X_train = preprocessor.fit_transform(df_train[self.features])
+        y_train = df_train[self.target]
 
-        param_grid = {f"classifier__{key}": value for key, value in self.param_grid.items()}
+        X_validation = preprocessor.transform(df_validation[self.features])
+        y_validation = df_validation[self.target]
+
+        smote = SMOTE(random_state=self.random_state)
+
+        x_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+
+        eval_set = [(x_train_resampled, y_train_resampled), (X_validation, y_validation)]
+        base_model = XGBClassifier(objective='multi:softmax', num_class=5)
 
         random_search = RandomizedSearchCV(
-            estimator=pipeline,
-            param_distributions=param_grid,
+            estimator=base_model,
+            param_distributions=self.param_grid,
             n_iter=self.iters,
-            scoring='accuracy',
+            scoring='recall_weighted',
             verbose=1,
             n_jobs=-1,
-            random_state=self.random_state,
-            cv=3
+            cv=10
         )
 
         model_logger.info("Performing random search for best parameters...")
+        random_search.fit(x_train_resampled, y_train_resampled)
 
-        random_search.fit(df_train[self.features], df_train[self.target])
-
-        best_params = {k.replace('classifier__', ''): v
-                       for k, v in random_search.best_params_.items()}
-
+        best_params = random_search.best_params_
         model_logger.info(f"Best parameters found: {best_params}")
 
         best_model = XGBClassifier(
             **best_params,
             objective='multi:softmax',
-            num_class=5
+            eval_metric="mlogloss"
         )
 
-        final_pipeline = Pipeline(steps=[("preprocessor", preprocessor), ("classifier", best_model)])
+        best_model.fit(
+            x_train_resampled,
+            y_train_resampled,
+            eval_set=eval_set,
+            verbose=1
+        )
 
-        model_logger.info("Training final model...")
+        eval_results = best_model.evals_result()
+        if "validation_0" in eval_results and "validation_1" in eval_results:
+            epochs = range(len(eval_results["validation_0"]["mlogloss"]))
+            plt.figure(figsize=(10, 6))
+            plt.plot(epochs, eval_results["validation_0"]["mlogloss"], label="Train")
+            plt.plot(epochs, eval_results["validation_1"]["mlogloss"], label="Validation")
+            plt.xlabel("Epoch")
+            plt.ylabel("Log Loss")
+            plt.title("XGBoost Log Loss with SMOTE")
+            plt.legend()
+            plt.grid()
+            plt.show()
 
-        final_pipeline.fit(df_train[self.features], df_train[self.target])
+        final_pipeline = Pipeline(steps=[
+            ("preprocessor", preprocessor),
+            ("classifier", best_model),
+        ])
 
         def evaluate_predictions(y_true, y_pred, set_name):
-            # Convert back to 1-5 scale
+
             y_true = y_true + 1
             y_pred = y_pred + 1
 
@@ -196,7 +242,5 @@ class MovieRatingXGB:
 
         if self.save:
             joblib.dump(final_pipeline, os.path.join(BASE_DIR, 'movies/best_pipeline.pkl'))
-
-        return final_pipeline
 
 

@@ -7,6 +7,7 @@
 {% block content %}
 
     {% load my_tags %}
+    {% load static %}
 
     <h2>{{ playlist.name }}</h2>
 
@@ -64,6 +65,7 @@
         <p>Loading...</p>
     </div>
 
+
     <nav>
         <p><a href="{% url 'view_playlists' %}" class="bold-link loading-link">Return to your playlists</a></p>
     </nav>
@@ -71,5 +73,7 @@
     <nav>
         <p><a href="{% url 'get_recommendation_for_playlist' playlist.id %}" class="bold-link loading-link">View Recommendations for this playlist</a></p>
     </nav>
+
+    <script src="{% static 'playlist/javascript/loader.js' %}"></script>
 
 {% endblock %}

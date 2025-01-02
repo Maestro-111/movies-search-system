@@ -1,7 +1,9 @@
 import logging.config
 import os
+from pathlib import Path
 
-os.makedirs("logs", exist_ok=True)
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+os.makedirs(os.path.join(BASE_DIR, "logs"), exist_ok=True)
 
 GENERAL_LOGGING_CONFIG = {
     "version": 1,
@@ -33,7 +35,7 @@ GENERAL_LOGGING_CONFIG = {
             "class": "logging.FileHandler",
             "level": "INFO",
             "formatter": "standard",
-            "filename": "logs/movies-search-system.log",
+            "filename": os.path.join(os.path.join(BASE_DIR, "logs"), "movies-search-system.log"),
             "mode": "a",
             "encoding": "utf-8",
         },
@@ -41,7 +43,7 @@ GENERAL_LOGGING_CONFIG = {
             "class": "logging.FileHandler",
             "level": "INFO",
             "formatter": "standard",
-            "filename": "logs/models.log",
+            "filename": os.path.join(os.path.join(BASE_DIR, "logs"), "models.log"),
             "mode": "a",
             "encoding": "utf-8",
         },
@@ -68,5 +70,5 @@ model_logger = logging.getLogger("model-logger")
 
 
 system_logger.info("This is an info log for the system logger.")
-model_logger.debug("This is a debug log for the model logger.")
+model_logger.info("This is a info log for the model logger.")
 

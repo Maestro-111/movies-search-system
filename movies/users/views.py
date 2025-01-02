@@ -77,7 +77,6 @@ def user_add_friends(request, friend_id):
 def show_user(request, username):
 
     context = create_user_info(username)
-
     return render(request, "users/show_friend.html", context=context)
 
 
@@ -91,6 +90,7 @@ def user_view_friends(request):
     users_with_profiles = friends.select_related("profile")
 
     paginator = Paginator(users_with_profiles, 20)
+
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 

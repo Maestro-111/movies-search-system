@@ -85,8 +85,7 @@ def group_recommendation(selected_movies, wordvec, user):
         recommended_movie_ids = produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, metadata_name=meta_data_names, user=user)
         recommended_movies = [Movie.objects.get(movie_id=id) for id in recommended_movie_ids if id in all_metadata_dict and all_metadata_dict[id].movie.original_title not in seen_titles]
 
-        sample_size = min(random.randint(1, len(recommended_movies)), 3)
-        recommendations.update(random.sample(recommended_movies, k=sample_size))
+        recommendations.update(recommended_movies[:3])
 
     return list(recommendations)
 
