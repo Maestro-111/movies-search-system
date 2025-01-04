@@ -69,6 +69,6 @@ system_logger = logging.getLogger("movies-search-system")
 model_logger = logging.getLogger("model-logger")
 
 
-system_logger.info("This is an info log for the system logger.")
-model_logger.info("This is a info log for the model logger.")
+# system_logger.info("This is an info log for the system logger.")
+# model_logger.info("This is a info log for the model logger.")
 

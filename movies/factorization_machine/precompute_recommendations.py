@@ -5,7 +5,6 @@ import django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movies.settings")
 django.setup()
 
-
 from movie.models import Movie, MovieMetaData, Rating
 from playlist.models import Playlist
 
@@ -17,7 +16,6 @@ from django.contrib.auth.models import User
 
 from gensim.models import Word2Vec
 
-import random
 from django.core.cache import cache
 
 
@@ -41,10 +39,23 @@ def user_playlist_recommendations():
 
             movie_ids = [movie.movie_id for movie in recommendations]
 
-            cache_key = f"{user.id}_{playlist.id}"
+            cache_key = f"{user.id}_{playlist.id}_playlist_recommendations"
             cache.set(cache_key, json.dumps(movie_ids), timeout=86400)  # Cache for 24 hours
 
         break
+
+
+def user_all_recommendations():
+
+
+    """
+    first we call user_playlist_recommendations, then just combine results of that by cache and store
+
+    cache = user.id_all_recommendations
+
+    """
+
+    pass
 
 
 

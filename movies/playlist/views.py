@@ -207,11 +207,8 @@ def get_recommendation_for_playlist(request, playlist_id):
     get recommendations for a user for based on all exact playlist
     """
 
-    cache_key = f"{request.user.id}_{playlist_id}"
+    cache_key = f"{request.user.id}_{playlist_id}_playlist_recommendations"
     recommendations = cache.get(cache_key)
-
-    print(cache_key)
-    print(recommendations)
 
     if recommendations:
 
@@ -249,31 +246,53 @@ def get_recommendation_for_playlist(request, playlist_id):
 
 @login_required
 def get_my_recommendations(request):
+
     """
     get recommendations for a user for based on all playlists
     """
 
-    wordvec = Word2Vec.load(str(settings.MODEL_DIR))
-    playlists = Playlist.objects.filter(user=request.user)
+    cache_key = f"{request.user.id}_all_recommendations"
+    recommendations = cache.get(cache_key)
 
-    if not playlists.exists():
-        return render(
-            request,
-            "playlist/show_recommendations.html",
-            {"error_message": "You do not have any playlists"},
-        )
+    if recommendations:
 
-    selected_movies = set()
+        movie_ids = json.loads(recommendations)
+        recommendations = Movie.objects.filter(movie_id__in=movie_ids)
 
-    for playlist in playlists:
-        selected_movies.update(playlist.movie.all())
+    else:
 
-    if not selected_movies:
-        return render(
-            request,
-            "playlist/show_recommendations.html",
-            {"error_message": "You do not have any movies in your playlists"},
-        )
+        wordvec = Word2Vec.load(str(settings.MODEL_DIR))
+        playlists = Playlist.objects.filter(user=request.user)
 
-    recommendations = group_recommendation(selected_movies=selected_movies, wordvec=wordvec, user=request.user)
-    return render(request, "playlist/show_recommendations.html", {"result": recommendations})
+        if not playlists.exists():
+            return render(
+                request,
+                "playlist/show_recommendations.html",
+                {"error_message": "You do not have any playlists"},
+            )
+
+        selected_movies = set()
+
+        for playlist in playlists:
+            selected_movies.update(playlist.movie.all())
+
+        if not selected_movies:
+            return render(
+                request,
+                "playlist/show_recommendations.html",
+                {"error_message": "You do not have any movies in your playlists"},
+            )
+
+        recommendations = group_recommendation(selected_movies=selected_movies, wordvec=wordvec, user=request.user)
+
+        movie_ids = [movie.movie_id for movie in recommendations]
+        cache.set(cache_key, json.dumps(movie_ids), timeout=300)
+
+    paginator = Paginator(recommendations, 10)
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {"result": page_obj}
+
+    return render(request, "playlist/show_recommendations.html", context=context)

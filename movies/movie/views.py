@@ -14,6 +14,8 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from gensim.models import Word2Vec
 
+from django.core.paginator import Paginator
+
 from embeddings.chroma_db import chroma_client
 
 import torch
@@ -36,6 +38,12 @@ model = SentenceTransformer("all-MiniLM-L6-v2")
 
 @csrf_exempt
 def chat_bot_request(request):
+
+    """
+    ask a chatbot. Users test is a text in a natural language.
+    we use embeddings in chroma db to get closest 10
+    """
+
     if request.method == "POST":
         user_message = request.POST.get("chat_bot_request", "")
         user_embedding = model.encode(user_message).tolist()
@@ -70,104 +78,123 @@ def enter_query(request):
 
 def movie_search(request):
     """
-    Find the best matches for the query using fuzzy matching or image embeddings.
+    Find the best matches for the query.
+
+    For text query we use full text search
+    For image query we use chroma db embeddings computed with Res Net for image posters in db
     """
 
     query = request.POST.get("query")
     image = request.FILES.get("image")  # Check if an image was uploaded
 
-    movies = None
+    movies = []
 
-    if query:
-        relative_path = "movies/config/languages.json"
-        file_path = os.path.join(settings.BASE_DIR, relative_path)
+    if not query and not image:
+        movie_ids = request.session.get("movie_ids", [])
+        movies = Movie.objects.filter(movie_id__in=movie_ids)
 
-        with open(file_path, "r") as f:
-            language_config = json.load(f)
+    else:
 
-        try:
-            language = detect(query)
-        except Exception as e:
-            system_logger.error(f"Could not detect language: {e}")
-            language = "english"
+        if query:
+            relative_path = "movies/config/languages.json"
+            file_path = os.path.join(settings.BASE_DIR, relative_path)
 
-        pg_config = language_config.get(language, "english")  # Fallback to English if language is not found
+            with open(file_path, "r") as f:
+                language_config = json.load(f)
 
-        # Perform Full Text Search
-        search_query = SearchQuery(query, config=pg_config)
-        search_vector = SearchVector("original_title", config=pg_config, weight="A")
+            try:
+                language = detect(query)
+            except Exception as e:
+                system_logger.error(f"Could not detect language: {e}")
+                language = "english"
 
-        # Combine FTS with Trigram Similarity
-        movies = (
-            Movie.objects.annotate(rank=SearchRank(search_vector, search_query), similarity=TrigramSimilarity("original_title", query))  # Trigram similarity for typo tolerance
-            .filter(Q(rank__gte=0.1) | Q(similarity__gte=0.3))  # Filter by either FTS rank or trigram similarity
-            .order_by("-rank", "-similarity")
-        )  # Sort by rank first, then by similarity
+            pg_config = language_config.get(language, "english")
 
-        # Limit results
-        movies = list(movies[:10])
-        system_logger.info(f"best mathces for {query} are ': {[movie.original_title for movie in movies]}")
+            search_query = SearchQuery(query, config=pg_config)
+            search_vector = SearchVector("original_title", config=pg_config, weight="A")
 
-    if image:
-        posters_collection = chroma_client.get_collection("posters_collection")
-        resnet, transform = get_model_pipeline()
-
-        try:
-            img = Image.open(image).convert("RGB")  # Ensure RGB format
-            image_tensor = transform(img).unsqueeze(0)
-
-            with torch.no_grad():
-                embedding = resnet(image_tensor)
-
-            embedding = embedding.squeeze().numpy()
-
-            # Query ChromaDB for similar posters
-            results = posters_collection.query(
-                query_embeddings=[embedding],
-                n_results=10,
+            movies = (
+                Movie.objects.annotate(rank=SearchRank(search_vector, search_query), similarity=TrigramSimilarity("original_title", query))  # Trigram similarity for typo tolerance
+                .filter(Q(rank__gte=0.1) | Q(similarity__gte=0.3))
+                .order_by("-rank", "-similarity")
             )
 
-            movie_names = results["ids"][0]
-            movies = []
+            movies = list(movies[:20])
+            system_logger.info(f"best mathces for {query} are ': {[movie.original_title for movie in movies]}")
 
-            for title in movie_names:
-                try:
-                    movie_name = re.findall(r"^(.*) \(\d+\)_\d+$", title)
-                    year = re.findall(r"\((\d+)\)", title)
+            request.session["movie_ids"] = [movie.movie_id for movie in movies]
 
-                    movie_name = movie_name[0].strip()
-                    year = int(year[0])
+        if image:
 
-                    matching_movies = Movie.objects.filter(Q(original_title__icontains=movie_name) & Q(year=year))
+            posters_collection = chroma_client.get_collection("posters_collection")
+            resnet, transform = get_model_pipeline()
 
-                    system_logger.info(f"ResNet Search results': {[movie.original_title for movie in matching_movies]}")
+            try:
+                img = Image.open(image).convert("RGB")
+                image_tensor = transform(img).unsqueeze(0)
 
-                    if matching_movies.exists():
-                        movies.extend(list(matching_movies))
-                    else:
-                        system_logger.info(f"No movies found with the title: {title}")
-                except Exception as e:
-                    system_logger.exception(f"Error retrieving movie with title {title}: {e}")
+                with torch.no_grad():
+                    embedding = resnet(image_tensor)
 
-        except UnidentifiedImageError:
-            return render(request, "movie/search_movie.html", {"error": "Invalid image format"})
-        except Exception as e:
-            return render(
-                request,
-                "movie/search_movie.html",
-                {"error": f"Error processing image: {e}"},
-            )
+                embedding = embedding.squeeze().numpy()
 
-    return render(request, "movie/search_movie.html", {"movies": movies})
+                results = posters_collection.query(
+                    query_embeddings=[embedding],
+                    n_results=20,
+                )
+
+                movie_names = results["ids"][0]
+                movies = []
+
+                for title in movie_names:
+                    try:
+                        movie_name = re.findall(r"^(.*) \(\d+\)_\d+$", title)
+                        year = re.findall(r"\((\d+)\)", title)
+
+                        movie_name = movie_name[0].strip()
+                        year = int(year[0])
+
+                        matching_movies = Movie.objects.filter(Q(original_title__icontains=movie_name) & Q(year=year))
+
+                        system_logger.info(f"ResNet Search results': {[movie.original_title for movie in matching_movies]}")
+
+                        if matching_movies.exists():
+                            movies.extend(list(matching_movies))
+                        else:
+                            system_logger.info(f"No movies found with the title: {title}")
+                    except Exception as e:
+                        system_logger.exception(f"Error retrieving movie with title {title}: {e}")
+
+                request.session["movie_ids"] = [movie.movie_id for movie in movies]
+
+            except UnidentifiedImageError:
+                return render(request, "movie/search_movie.html", {"error": "Invalid image format"})
+
+            except Exception as e:
+                return render(
+                    request,
+                    "movie/search_movie.html",
+                    {"error": f"Error processing image: {e}"},
+                )
+
+    paginator = Paginator(movies, 10)
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+    context = {"movies": page_obj}
+
+    return render(request, "movie/search_movie.html", context=context)
 
 
 def show_movie(request, movie_id):
+
     """
     show selected movie and display recommendations
     """
 
-    cache_key = f"recommended_ids_{movie_id}"
+    cache_key = f"recommended_ids_{movie_id}_{request.user.id if request.user.is_authenticated else ''}"
     recommended_ids = cache.get(cache_key)
+
 
     movie = Movie.objects.get(movie_id__exact=movie_id)
     wordvec = Word2Vec.load(str(settings.MODEL_DIR))

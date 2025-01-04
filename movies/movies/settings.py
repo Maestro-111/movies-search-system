@@ -13,22 +13,19 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv, find_dotenv
+import json
 
 load_dotenv(find_dotenv())
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
+features = os.path.join(BASE_DIR, "movies/config/features.json")
 
-# print(BASE_DIR)
+with open(features, "r") as json_file:
+    loaded_data = json.load(json_file)
 
-"""
-Hard coding features (columns) used in cosine sim
-"""
-
-
-GENERAL = os.getenv("GENERAL").split(",")
-GENRES = os.getenv("GENRES").split(",")
-SPOKEN_LANGUAGES = os.getenv("SPOKEN_LANGUAGES").split(",")
+GENERAL = loaded_data["GENERAL"]
+GENRES = loaded_data["GENRES"]
+SPOKEN_LANGUAGES = loaded_data["SPOKEN_LANGUAGES"]
 
 
 FEATURES = GENERAL + GENRES + SPOKEN_LANGUAGES
@@ -36,7 +33,9 @@ FEATURES = GENERAL + GENRES + SPOKEN_LANGUAGES
 METADATA_PATH = BASE_DIR / "movies" / "data" / "movies_metadata_short.xlsx"
 MODEL_DIR = BASE_DIR / "movies" / "word2vec.model"
 
-#  metadata model reads the following file always
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/1" #'redis://redis:6379/0' # like in dockercompose
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
 
 
 # Quick-start development settings - unsuitable for production
@@ -67,7 +66,9 @@ INSTALLED_APPS = [
     "django.contrib.postgres",
     "playlist.apps.PlaylistConfig",
     "forum.apps.ForumConfig",
+    "factorization_machine.apps.FactorizationMachineConfig",
     "debug_toolbar",
+    'django_celery_beat'
 ]
 
 MIDDLEWARE = [
