@@ -15,6 +15,9 @@ import os
 from dotenv import load_dotenv, find_dotenv
 import json
 
+from celery.schedules import crontab
+import factorization_machine.tasks
+
 load_dotenv(find_dotenv())
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -33,7 +36,9 @@ FEATURES = GENERAL + GENRES + SPOKEN_LANGUAGES
 METADATA_PATH = BASE_DIR / "movies" / "data" / "movies_metadata_short.xlsx"
 MODEL_DIR = BASE_DIR / "movies" / "word2vec.model"
 
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/1" #'redis://redis:6379/0' # like in dockercompose
+CELERY_BROKER_URL = "redis://redis:6379/1" #'redis://redis:6379/0' # like in dockercompose
+CELERY_RESULT_BACKEND ="redis://redis:6379/2"
+
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 
@@ -131,18 +136,10 @@ DATABASES = {
     }
 }
 
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
-#         "LOCATION": os.path.join(BASE_DIR, "movies_cache"),
-#         "TIMEOUT": 300,
-#     }
-# }
-
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/1",  # "LOCATION": "redis://redis:6379/1" for container
+        "LOCATION": "redis://redis:6379/0",  # "LOCATION": "redis://redis:6379/1" for container "redis://127.0.0.1:6379/1" for local
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
@@ -198,3 +195,19 @@ if not os.path.exists(STATIC_ROOT):
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "users:login"
+
+
+# CELERY_BEAT_SCHEDULE = {
+#     "sample_task": {
+#         "task": "factorization_machine.tasks.sample_task",
+#         "schedule": crontab(minute=0, hour=0),
+#     },
+# }
+
+
+CELERY_BEAT_SCHEDULE = {
+    "sample_task": {
+        "task": "factorization_machine.tasks.sample_task",
+        "schedule": crontab(minute="*/1"),
+    },
+}

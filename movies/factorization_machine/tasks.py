@@ -1,11 +1,19 @@
 from celery import shared_task
+from celery.utils.log import get_task_logger
+
+
+logger = get_task_logger(__name__)
+
 
 @shared_task
-def daily_model_training():
+def sample_task():
 
-    """Train and save the model once a day"""
+    """
+    create task for training the ranking model
+    """
 
-    print("Training model")
 
-    return "Model training completed."
+    logger.info("The sample task just ran.")
+
+
 

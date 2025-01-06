@@ -11,6 +11,8 @@ COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 RUN python -m nltk.downloader punkt
 
+# Copy the entire project
+COPY entrypoint.sh /app/
 COPY movies /app/movies
 COPY populate_database /app/populate_database
 COPY .env /app/
@@ -21,5 +23,9 @@ ENV DJANGO_SETTINGS_MODULE=movies.settings
 # Expose the port the app runs on
 EXPOSE 8000
 
-# Run the Django development server
-CMD ["python", "movies/manage.py", "runserver", "0.0.0.0:8000"]
+# Create an entrypoint script
+COPY entrypoint.sh /app/
+RUN chmod +x /app/entrypoint.sh
+
+# Use the entrypoint script
+ENTRYPOINT ["/app/entrypoint.sh"]

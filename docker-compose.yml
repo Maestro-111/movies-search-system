@@ -11,6 +11,36 @@ services:
     environment:
       - DEBUG=True
       - DJANGO_SETTINGS_MODULE=movies.settings
+    command:
+      - web
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery_worker
+    depends_on:
+      - web
+      - redis
+      - db
+    environment:
+      - DEBUG=True
+      - DJANGO_SETTINGS_MODULE=movies.settings
+
+
+
+  celery_beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery_beat
+    depends_on:
+      - web
+      - redis
+      - db
+    environment:
+      - DEBUG=True
+      - DJANGO_SETTINGS_MODULE=movies.settings
 
   db:
     image: postgres:15

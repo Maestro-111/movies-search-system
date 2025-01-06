@@ -13,3 +13,4 @@ movies_cache
 problemseta.py
 passwords.txt
 *.pth
+*.db
