@@ -19,7 +19,7 @@ from pathlib import Path
 from config.logger_config import model_logger
 import matplotlib.pyplot as plt
 
-from imblearn.over_sampling import SMOTE
+from imblearn.over_sampling import SMOTE, ADASYN
 from imblearn.pipeline import Pipeline as ImbPipeline
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -126,14 +126,17 @@ class MovieRatingXGB:
     def prepare_data(self):
         """Split data into train, validation, and test sets"""
 
-        total_size = len(self.df)
+        df  = self.df.sample(frac=1).reset_index(drop=True)
+
+        total_size = len(df)
         test_size = int(total_size * self.test_size)
+
         validation_size = int(total_size * self.val_size)
         train_size = total_size - test_size - validation_size
 
-        df_train = self.df.iloc[:train_size]
-        df_validation = self.df.iloc[train_size:train_size + validation_size]
-        df_test = self.df.iloc[train_size + validation_size:]
+        df_train = df.iloc[:train_size]
+        df_validation = df.iloc[train_size:train_size + validation_size]
+        df_test = df.iloc[train_size + validation_size:]
 
         categorical_cols = ["User", "Movie"]
         numerical_cols = self.features.difference(categorical_cols + [self.target])
@@ -167,7 +170,7 @@ class MovieRatingXGB:
         X_validation = preprocessor.transform(df_validation[self.features])
         y_validation = df_validation[self.target]
 
-        smote = SMOTE(random_state=self.random_state)
+        smote = ADASYN(random_state=self.random_state)
 
         x_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
 

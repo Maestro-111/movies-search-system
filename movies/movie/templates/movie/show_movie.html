@@ -5,6 +5,7 @@
 {% block header %}Movie Details{% endblock %}
 
 {% block content %}
+    {% load static %}
     <section class="display-details">
         <h2>{{ movie.original_title }}</h2>
         <p><strong>Description:</strong> {{ movie.overview }}</p>
@@ -41,7 +42,9 @@
                 {% for movie in produce_recommendations %}
                     <li>
                         <span class="label">Movie Title:</span>
-                        <a href="{{ movie.get_absolute_url }}">{{ movie.original_title }}</a>
+                        <a href="{{ movie.get_absolute_url }}" data-title="{{ movie.original_title }}">
+                        {{ movie.original_title }}
+                        </a>
                     </li>
                     {% if not forloop.last %}
                         <hr>
@@ -52,6 +55,10 @@
             </ul>
         </section>
     {% endif %}
+
+    <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+        <p>Loading...</p>
+    </div>
 
     <nav>
         <p><a href="{% url 'movie_search' %}" class="bold-link">Return to the Movie Search</a></p>
@@ -64,5 +71,7 @@
     <nav>
         <p><a href="{% url 'write_review' movie.movie_id %}" class="bold-link">Write Review</a></p>
     </nav>
+
+    <script src="{% static 'movie/javascript/loading_indicator.js' %}"></script>
 
 {% endblock %}

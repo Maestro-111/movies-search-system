@@ -122,6 +122,7 @@ def user_delete_friends(request):
 
 
 def login_user(request):
+
     if request.method == "POST":
         form = LoginUserForm(request.POST)
         if form.is_valid():
