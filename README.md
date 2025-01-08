@@ -4,7 +4,8 @@
 This is a Django web app that allows user searching for their favorite movies.
 Also, for each movie system will provide up to 10 recommendations.
 
-Also, users can create their playlist and based on movies in playlist they will get up to 10 recommendations.
+User can create their playlist and based on movies in playlist they will get 3 recommendations per movie.
+Finally, user may view recommendations based on all movies in their playlist (this is the most time-consuming part)
 
 Right now database, which is PostgresSQL, contains around 25k movies and related information.
 
@@ -43,17 +44,28 @@ PostgresSQL is used to store it.
 ### Recommendations
 
 1) Our system produces content based recommendations. It means it will recommend movies only based on the choice of previosuly selected movies.
-2) We use simple cosine similarity equation modified to accept more inputs such as ratings.
+2) We use a combination of cosine similarity and XGB ranker.
+   1) For each movie we use cosine similarity to look for k closes movies.
+   2) Then, for each closest, if user is logged in, we use trained XGB ranker to rank movies based on the user ratings
+   3) If user is not logged in we output 10 from k closest from step 1, else we output 10 from the ranked movies from step 2
 
 
 ### Embeddings Storage
 
-1) To store Embeddings efficiently we use chroma db client for that.
+1) To store Embeddings (that allow image/natural language search) efficiently we use chroma db client for that.
 
 
 ### Redis
 
 1) We use Redis to cache the results from different searches/recommendations.
+2) We use Reddis as a Celery broker
+3) We use Reddis to store the precomputed recommendations
+
+
+### Celery (not fully implemented yet)
+
+1) Recommendation computation is quite time-consuming. We use celery to schedule a background task that re-trains XGB and computes recommendations for each user
+2) We store recommendations in Reddis. Then, when user wants to see their recommendations, we just retrieve info from Reddis.
 
 
 ## Project Set Up
@@ -69,7 +81,7 @@ cd movies-search-system
 
 ## Docker Set up
 
-It's convinient to use docker to  get all packages/dependencies set up together.
+It's convenient to use docker to  get all packages/dependencies set up together.
 
 1) Create a docker compose:
 
@@ -78,7 +90,7 @@ docker compose build
 docker compose up
 ```
 
-2) Run migrations from web container
+2) Run migrations within web container
 
 ```
 cd movies
@@ -95,7 +107,7 @@ python main.py
 
 ```
 
-4) Create Embeddings for both images/text
+4) Create Embeddings for both images/text data
 
 ```
 cd ..
@@ -110,6 +122,5 @@ python generate_image_embeddings.py
 2. front-end (cont)
 3. Fix .dockerignore issue (e.g. not ignoring sqlite files)
 4. Continue updating friends section within users. Final goal is to have more info for recommendations
-5. Ranking Model overfit (oversampling is not working...)
-6. Configure computation backstage (celery configuration)
-7. add paginator for display where needed
+5. Change XGB from classification to ranker
+6. Update celery task
