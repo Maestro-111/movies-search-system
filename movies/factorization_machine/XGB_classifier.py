@@ -25,7 +25,6 @@ from imblearn.pipeline import Pipeline as ImbPipeline
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
-
 class EvalHistory(callback.TrainingCallback):
 
     def __init__(self):
@@ -244,6 +243,6 @@ class MovieRatingXGB:
             evaluate_predictions(df_eval[self.target], y_pred, name)
 
         if self.save:
-            joblib.dump(final_pipeline, os.path.join(BASE_DIR, 'movies/best_pipeline.pkl'))
+            joblib.dump(final_pipeline, os.path.join(BASE_DIR, 'movies/factorization_machine/best_pipeline.pkl'))
 
 

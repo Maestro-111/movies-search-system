@@ -87,6 +87,5 @@ def generate_and_save_embeddings():
 
 
 if __name__ == "__main__":
-    print("hello world")
     delete_existing_embeddings()
     generate_and_save_embeddings()

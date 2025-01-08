@@ -287,33 +287,17 @@ def output_data(output_file="ratings_data.xlsx"):
     for rating in ratings:
 
         metadata = movie_metadata.get(rating.movie.movie_id)
-        movie = rating.movie
 
         if metadata:
             meta_features = [getattr(metadata, feature, None) for feature in settings.FEATURES]
         else:
             meta_features = [None] * len(settings.FEATURES)
 
-        movie_actors = MovieActor.objects.filter(movie=movie).select_related("actor")
-
-        actors = ", ".join([movie_actor.actor.actor_name or "Unknown Actor" for movie_actor in movie_actors])
-        charaters = ", ".join([movie_actor.character_name or "Unknown Character" for movie_actor in movie_actors])
-
-        text = (
-            f"{movie.original_title}, a {', '.join([genre.genre for genre in movie.genres.all()])} movie "
-            f"in {', '.join([language.language for language in movie.languages.all()])} from {movie.year or 'an unknown year'}. "
-            f"Actors: {actors}. "
-            f"Characters: {charaters}. "
-            f"{movie.overview or ''}"
-        )
-
         row = {
             "User": rating.user.username,
             "Movie": rating.movie.movie_id,
             "Rating": rating.rating,
         }
-
-
 
         row.update({feature: value for feature, value in zip(settings.FEATURES, meta_features)})
         data.append(row)

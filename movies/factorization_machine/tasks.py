@@ -10,6 +10,10 @@ def sample_task():
 
     """
     create task for training the ranking model
+
+    1) call output_data
+    2) call train_test_output
+    3) call precompute_recommendations (both playlist and general)
     """
 
 

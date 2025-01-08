@@ -60,7 +60,6 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings
     meta_ids are just ids of each movie
     """
 
-    print(user)
 
     meta_ids, meta_matrix = zip(*metadata_rows)
     meta_matrix = np.array(meta_matrix)

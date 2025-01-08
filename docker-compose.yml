@@ -28,7 +28,6 @@ services:
       - DJANGO_SETTINGS_MODULE=movies.settings
 
 
-
   celery_beat:
     build:
       context: .

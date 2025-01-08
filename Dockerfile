@@ -24,7 +24,6 @@ ENV DJANGO_SETTINGS_MODULE=movies.settings
 EXPOSE 8000
 
 # Create an entrypoint script
-COPY entrypoint.sh /app/
 RUN chmod +x /app/entrypoint.sh
 
 # Use the entrypoint script
