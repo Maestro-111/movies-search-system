@@ -1,3 +1,5 @@
+import pickle
+
 import numpy as np
 from nltk.tokenize import word_tokenize
 from django.conf import settings
@@ -6,7 +8,8 @@ import pandas as pd
 from pathlib import Path
 import os
 from config.logger_config import system_logger
-
+from .XGB_classifier import MovieRankingXGB
+import sys
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -100,7 +103,9 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings
     combined_score= α×cosine_similarity+(1−α)×user_rating
     """
 
-    ranking_model = joblib.load(os.path.join(BASE_DIR, "movies/factorization_machine/best_pipeline.pkl"))
+    with open(os.path.join(BASE_DIR, "movies/factorization_machine/best_pipeline.pkl"), 'rb') as f:
+        ranking_model = pickle.load(f)
+
 
     for i, movie_id in enumerate(meta_ids):
         user_rating = user_ratings.get(movie_id, 2.5)
@@ -115,31 +120,29 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings
     combined_scores.sort(key=lambda x: -x[1])
 
     if user:
-        system_logger.info(f"doing ranking for user {user}")
 
+        system_logger.info(f"doing ranking for user {user}")
         combined_scores = combined_scores[:100]
-        ranked_movies = []
+
+        features_list = []
 
         for movie_id, _, i in combined_scores:
+            features_list.append({
+                "User": str(user.id),
+                "Movie": str(movie_id),
+                **{f"{metadata_name[j]}": meta_matrix[i][j] for j in range(len(metadata_name))}
+            })
 
-            try:
-                feature_row = pd.DataFrame([{
-                    "User": str(user.id),
-                    "Movie": str(movie_id),
-                    **{f"{metadata_name[j]}": meta_matrix[i][j] for j in range(len(metadata_name))}
-                }])
+        feature_rows = pd.DataFrame(features_list)
+        feature_rows.fillna('Unknown', inplace=True)
 
-                feature_row.fillna('Unknown', inplace=True)
-                predicted_rank = ranking_model.predict(feature_row)[0]
+        predicted_ranks = ranking_model.predict(feature_rows)
+        movie_rankings = list(zip([m[0] for m in combined_scores], predicted_ranks))
 
-            except Exception as e:
-                system_logger.exception(f"Exception while ranking {movie_id}: {e}")
-                predicted_rank = -float('inf')
+        sorted_movies = sorted(movie_rankings, key=lambda x: x[1], reverse=True)
+        recommended_ids = [movie_id for movie_id, _ in sorted_movies[:10]]
 
-            ranked_movies.append((movie_id, predicted_rank))
-
-        ranked_movies.sort(key=lambda x: -x[1])
-        recommended_ids = [movie_id for movie_id, _ in ranked_movies[:10]]
+        print(sorted_movies)
 
     else:
         system_logger.info(f"skipping ranking, no user")

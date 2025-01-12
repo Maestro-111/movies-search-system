@@ -1,26 +1,23 @@
-from imblearn.under_sampling._prototype_selection._tomek_links import TomekLinks
+
 from sklearn.compose._column_transformer import ColumnTransformer
+from sklearn.metrics._ranking import ndcg_score
 from sklearn.pipeline import Pipeline
 
 from sklearn.preprocessing._encoders import OneHotEncoder
-from xgboost import XGBClassifier,callback
-
-from scipy.stats import uniform, randint
-
-from sklearn.metrics import (accuracy_score, precision_score,
-                             recall_score, f1_score, classification_report)
-
-from sklearn.model_selection import RandomizedSearchCV
+from xgboost import callback, XGBRanker
 
 import joblib
+import pickle
 import os
 from pathlib import Path
 
 from config.logger_config import model_logger
 import matplotlib.pyplot as plt
 
-from imblearn.over_sampling import SMOTE, ADASYN
-from imblearn.pipeline import Pipeline as ImbPipeline
+from scipy.stats import uniform, randint
+import numpy as np
+
+import pickle
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -41,107 +38,61 @@ class EvalHistory(callback.TrainingCallback):
         return False
 
 
-class CustomEarlyStopping:
-    def __init__(self, tolerance=5, verbose=True):
-        """
-        Initialize early stopping for classification.
-
-        Args:
-            tolerance (int): Number of epochs to wait for improvement
-            verbose (bool): Whether to print stopping information
-        """
-        self.tolerance = tolerance
-        self.verbose = verbose
-        self.best_score = None
-        self.counter = 0
-
-    def __call__(self, env):
-        eval_result = env.evaluation_result_list
-
-        # Get validation accuracy (assuming it's the second metric)
-        current_score = eval_result[1][1]
-
-        if self.best_score is None:
-            self.best_score = current_score
-        elif current_score < self.best_score:
-            self.counter += 1
-            if self.verbose:
-                print(f"EarlyStopping counter: {self.counter} out of {self.tolerance}")
-            if self.counter >= self.tolerance:
-                if self.verbose:
-                    print("Early stopping triggered")
-                return True
-        else:
-            self.best_score = current_score
-            self.counter = 0
-
-        return False
-
-
-class MovieRatingXGB:
-
+class MovieRankingXGB:
     """
-    XGBoost classifier for movie rating prediction
+    XGBoost ranker for movie rating prediction
     """
 
     param_grid = {
-        'n_estimators': [80],
-        'max_depth': [2],  #randint(3, 8),
-        'learning_rate': uniform(0.01, 0.2),
-        'subsample': [1],
-        'colsample_bytree': uniform(0.7, 0.3),
-        'min_child_weight': randint(5, 30),
-        'gamma': [0,1,5],
-        'reg_alpha': uniform(0, 50),
-        'reg_lambda': uniform(0, 50),
+        'n_estimators': [50,60,70,80,90,100],  # Increased from 80
+        'max_depth': [2,3,4],  # Slightly increased complexity
+        'learning_rate': uniform(0.01, 0.1),  # Narrowed range
+        'subsample': uniform(0.8, 0.2),  # Added randomness
+        'colsample_bytree': uniform(0.8, 0.2),
+        'min_child_weight': randint(1, 10),  # Reduced to allow more splits
+        'gamma': [0, 0.1, 0.2],  # More granular values
+        'reg_alpha': uniform(0, 10),  # Reduced range
+        'reg_lambda': uniform(0, 10),
     }
 
-    def __init__(self, df, target:str, test_size=0.2, val_size=0.1,
-                 iters=20, tolerance=5, random_state=42, save=False):
-        """
-        Initialize the movie rating classifier.
-
-        Args:
-            df (DataFrame): Input DataFrame with features and target
-            features (list): List of feature column names
-            target (str): Target column name
-            test_size (float): Proportion of data for testing
-            val_size (float): Proportion of data for validation
-            iters (int): Number of iterations for random search
-            tolerance (int): Early stopping tolerance
-            random_state (int): Random seed
-        """
-
+    def __init__(self, df, target='Rating', test_size=0.2, val_size=0.1,
+                 iters=20, random_state=42, save=False):
         self.df = df
         self.target = target
-        self.features = df.columns.difference([target])
+        self.features = df.columns.difference([target, 'User'])
         self.test_size = test_size
         self.val_size = val_size
         self.iters = iters
-        self.tolerance = tolerance
         self.random_state = random_state
         self.save = save
 
     def prepare_data(self):
-        """Split data into train, validation, and test sets"""
+        """Split data into train, validation, and test sets, preserving user groups"""
+        df = self.df.sample(frac=1, random_state=self.random_state).reset_index(drop=True)
 
-        df  = self.df.sample(frac=1).reset_index(drop=True)
+        # Sort by user to ensure proper grouping
+        df = df.sort_values('User')
+        unique_users = df['User'].unique()
+        np.random.seed(self.random_state)
+        np.random.shuffle(unique_users)
 
-        total_size = len(df)
-        test_size = int(total_size * self.test_size)
+        n_users = len(unique_users)
+        n_test = int(n_users * self.test_size)
+        n_val = int(n_users * self.val_size)
 
-        validation_size = int(total_size * self.val_size)
-        train_size = total_size - test_size - validation_size
+        test_users = unique_users[:n_test]
+        val_users = unique_users[n_test:n_test + n_val]
+        train_users = unique_users[n_test + n_val:]
 
-        df_train = df.iloc[:train_size]
-        df_validation = df.iloc[train_size:train_size + validation_size]
-        df_test = df.iloc[train_size + validation_size:]
+        df_train = df[df['User'].isin(train_users)]
+        df_validation = df[df['User'].isin(val_users)]
+        df_test = df[df['User'].isin(test_users)]
 
-        categorical_cols = ["User", "Movie"]
+        categorical_cols = ["Movie"]
         numerical_cols = self.features.difference(categorical_cols + [self.target])
 
         preprocessor = ColumnTransformer(
-            transformers = [
+            transformers=[
                 ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols),
                 ("num", "passthrough", numerical_cols),
             ]
@@ -150,99 +101,163 @@ class MovieRatingXGB:
         return df_train, df_validation, df_test, preprocessor
 
     def train(self):
-
-        """Train the model and evaluate performance with SMOTE"""
-
+        """Train the ranking model and evaluate performance"""
         df_train, df_validation, df_test, preprocessor = self.prepare_data()
-
-        df_train = df_train.copy()
-        df_validation = df_validation.copy()
-        df_test = df_test.copy()
-
-        df_train[self.target] = df_train[self.target] - 1
-        df_validation[self.target] = df_validation[self.target] - 1
-        df_test[self.target] = df_test[self.target] - 1
 
         X_train = preprocessor.fit_transform(df_train[self.features])
         y_train = df_train[self.target]
+        groups_train = df_train['User']
 
         X_validation = preprocessor.transform(df_validation[self.features])
         y_validation = df_validation[self.target]
+        groups_validation = df_validation['User']
 
-        smote = ADASYN(random_state=self.random_state)
+        # Get group counts
+        group_counts_train = groups_train.value_counts().sort_index().values
+        group_counts_val = groups_validation.value_counts().sort_index().values
 
-        x_train_resampled, y_train_resampled = smote.fit_resample(X_train, y_train)
+        best_score = float('-inf')
+        best_params = None
 
-        eval_set = [(x_train_resampled, y_train_resampled), (X_validation, y_validation)]
-        base_model = XGBClassifier(objective='multi:softmax', num_class=5)
+        model_logger.info("Starting parameter search...")
 
-        random_search = RandomizedSearchCV(
-            estimator=base_model,
-            param_distributions=self.param_grid,
-            n_iter=self.iters,
-            scoring='recall_weighted',
-            verbose=1,
-            n_jobs=-1,
-            cv=10
-        )
+        # Generate parameter combinations
+        param_combinations = []
+        for _ in range(self.iters):
+            params = {
+                'n_estimators': np.random.choice(self.param_grid['n_estimators']),
+                'max_depth': np.random.choice(self.param_grid['max_depth']),
+                'learning_rate': np.random.uniform(0.01, 0.1),
+                'subsample': np.random.uniform(0.8, 1.0),
+                'colsample_bytree': np.random.uniform(0.8, 1.0),
+                'min_child_weight': np.random.randint(1, 10),
+                'gamma': np.random.choice(self.param_grid['gamma']),
+                'reg_alpha': np.random.uniform(0, 10),
+                'reg_lambda': np.random.uniform(0, 10),
+            }
+            param_combinations.append(params)
 
-        model_logger.info("Performing random search for best parameters...")
-        random_search.fit(x_train_resampled, y_train_resampled)
+        for params in param_combinations:
 
-        best_params = random_search.best_params_
-        model_logger.info(f"Best parameters found: {best_params}")
+            model = XGBRanker(
+                objective='rank:pairwise',
+                random_state=self.random_state,
+                eval_metric=['ndcg@5'],
+                lambdarank_pair_method = "topk",
+                **params
+            )
 
-        best_model = XGBClassifier(
-            **best_params,
-            objective='multi:softmax',
-            eval_metric="mlogloss"
+            model.fit(
+                X_train,
+                y_train,
+                group=group_counts_train,
+                eval_set=[(X_validation, y_validation)],
+                eval_group=[group_counts_val],
+                verbose=False
+            )
+
+            val_pred = model.predict(X_validation)
+            ndcg_scores = []
+            start_idx = 0
+
+            for group_size in group_counts_val:
+                end_idx = start_idx + group_size
+                group_true = y_validation[start_idx:end_idx]
+                group_pred = val_pred[start_idx:end_idx]
+                ndcg_scores.append(ndcg_score([group_true], [group_pred], k=5))
+                start_idx = end_idx
+
+            mean_ndcg = np.mean(ndcg_scores)
+
+            if mean_ndcg > best_score:
+                best_score = mean_ndcg
+                best_params = params
+                model_logger.info(f"New best score: {best_score:.3f} with params: {best_params}")
+
+        model_logger.info(f"Training final model with best parameters: {best_params}")
+        eval_history = EvalHistory()
+
+        best_model = XGBRanker(
+            objective='rank:pairwise',
+            random_state=self.random_state,
+            eval_metric=['ndcg@5'],
+            callbacks=[eval_history],
+            lambdarank_pair_method="topk",
+            **best_params
         )
 
         best_model.fit(
-            x_train_resampled,
-            y_train_resampled,
-            eval_set=eval_set,
-            verbose=1
+            X_train,
+            y_train,
+            group=group_counts_train,
+            eval_set=[(X_train, y_train), (X_validation, y_validation)],
+            eval_group=[group_counts_train, group_counts_val],
+            verbose=True
         )
 
-        eval_results = best_model.evals_result()
-        if "validation_0" in eval_results and "validation_1" in eval_results:
-            epochs = range(len(eval_results["validation_0"]["mlogloss"]))
-            plt.figure(figsize=(10, 6))
-            plt.plot(epochs, eval_results["validation_0"]["mlogloss"], label="Train")
-            plt.plot(epochs, eval_results["validation_1"]["mlogloss"], label="Validation")
-            plt.xlabel("Epoch")
-            plt.ylabel("Log Loss")
-            plt.title("XGBoost Log Loss with SMOTE")
-            plt.legend()
-            plt.grid()
-            plt.show()
+        plt.figure(figsize=(10, 6))
+        for key in eval_history.history:
+            for metric, values in eval_history.history[key].items():
+                plt.plot(values, label=f'{key}-{metric}')
+        plt.xlabel("Iteration")
+        plt.ylabel("NDCG@5")
+        plt.title("XGBoost Ranking Model Training Progress")
+        plt.legend()
+        plt.grid()
+        plt.show()
+
+        # X_combined = np.vstack([X_train, X_validation])
+        # y_combined = np.hstack([y_train, y_validation])
+        # group_counts_combined = np.concatenate([group_counts_train, group_counts_val])
+
+
+        best_model = XGBRanker(
+            objective='rank:pairwise',
+            random_state=self.random_state,
+            eval_metric=['ndcg@5'],
+            lambdarank_pair_method="topk",
+            **best_params
+        )
+
+        best_model.fit(
+            X_train,
+            y_train,
+            group=group_counts_train,
+            verbose=True
+        )
 
         final_pipeline = Pipeline(steps=[
             ("preprocessor", preprocessor),
-            ("classifier", best_model),
+            ("ranker", best_model),
         ])
 
-        def evaluate_predictions(y_true, y_pred, set_name):
+        def evaluate_predictions(df_eval, pipeline, set_name):
 
-            y_true = y_true + 1
-            y_pred = y_pred + 1
+            predictions = pipeline.predict(df_eval[self.features])
+            ndcg_scores = []
 
+            for user in df_eval['User'].unique():
+                user_mask = df_eval['User'] == user
+                user_true = df_eval.loc[user_mask, self.target]
+                user_pred = predictions[user_mask]
+                ndcg_scores.append(ndcg_score([user_true], [user_pred], k=5))
+
+            mean_ndcg = np.mean(ndcg_scores)
             model_logger.info(f"\n{set_name} Performance:")
-            model_logger.info(f"Accuracy: {accuracy_score(y_true, y_pred):.3f}")
-            model_logger.info(f"Precision: {precision_score(y_true, y_pred, average='weighted'):.3f}")
-            model_logger.info(f"Recall: {recall_score(y_true, y_pred, average='weighted'):.3f}")
-            model_logger.info(f"F1 Score: {f1_score(y_true, y_pred, average='weighted'):.3f}")
-            model_logger.info("\nClassification Report:")
-            model_logger.info(classification_report(y_true, y_pred))
+            model_logger.info(f"Mean NDCG@5: {mean_ndcg:.3f}")
+            model_logger.info(f"Min NDCG@5: {min(ndcg_scores):.3f}")
+            model_logger.info(f"Max NDCG@5: {max(ndcg_scores):.3f}")
 
+        # Evaluate on all sets
         for df_eval, name in [(df_train, "Training"),
                               (df_validation, "Validation"),
                               (df_test, "Test")]:
-            y_pred = final_pipeline.predict(df_eval[self.features])
-            evaluate_predictions(df_eval[self.target], y_pred, name)
+            evaluate_predictions(df_eval, final_pipeline, name)
+
 
         if self.save:
-            joblib.dump(final_pipeline, os.path.join(BASE_DIR, 'movies/factorization_machine/best_pipeline.pkl'))
+            with open(os.path.join(BASE_DIR, 'movies/factorization_machine/best_pipeline.pkl'), 'wb') as f:
+                pickle.dump(final_pipeline, f)
+
 
 

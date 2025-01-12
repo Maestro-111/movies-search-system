@@ -197,17 +197,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "users:login"
 
 
-# CELERY_BEAT_SCHEDULE = {
-#     "sample_task": {
-#         "task": "factorization_machine.tasks.sample_task",
-#         "schedule": crontab(minute=0, hour=0),
-#     },
-# }
 
 
 CELERY_BEAT_SCHEDULE = {
+    "model_pipeline": {
+        "task": "factorization_machine.tasks.model_pipeline",
+        "schedule": crontab(minute=0, hour=0),
+    },
     "sample_task": {
         "task": "factorization_machine.tasks.sample_task",
         "schedule": crontab(minute="*/1"),
-    },
+    }
 }

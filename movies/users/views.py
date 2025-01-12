@@ -28,6 +28,10 @@ def create_user_info(username):
 
     return context
 
+@login_required
+def user_summary(request):
+    return HttpResponse("Im here")
+
 
 
 def user_home(request):
@@ -113,6 +117,8 @@ def user_search(request):
                                     last_name__icontains=query.split()[-1]))[:10]
 
         users_with_profiles = users.select_related("profile")
+
+        print(users_with_profiles)
 
     return render(request, "users/user_search.html", {"users": users_with_profiles})
 
