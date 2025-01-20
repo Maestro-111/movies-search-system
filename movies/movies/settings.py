@@ -16,7 +16,7 @@ from dotenv import load_dotenv, find_dotenv
 import json
 
 from celery.schedules import crontab
-import factorization_machine.tasks
+# import factorization_machine.tasks
 
 load_dotenv(find_dotenv())
 
@@ -198,11 +198,14 @@ LOGIN_URL = "users:login"
 
 
 
-
 CELERY_BEAT_SCHEDULE = {
+    # "model_pipeline": {
+    #     "task": "factorization_machine.tasks.model_pipeline",
+    #     "schedule": crontab(minute=0, hour=0),
+    # },
     "model_pipeline": {
         "task": "factorization_machine.tasks.model_pipeline",
-        "schedule": crontab(minute=0, hour=0),
+         "schedule": crontab(minute="*/1"),
     },
     "sample_task": {
         "task": "factorization_machine.tasks.sample_task",

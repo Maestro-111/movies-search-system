@@ -1,12 +1,11 @@
 from celery import shared_task
 from celery.utils.log import get_task_logger
 
-# from .create_user_movie_relationships import output_data
-# from .train_fm import train_test_output
-# from .precompute_recommendations import user_playlist_recommendations
+from .create_user_movie_relationships import output_data
+from .train_fm import train_test_output
+from .precompute_recommendations import user_playlist_recommendations
 
 from pathlib import Path
-import os
 
 logger = get_task_logger(__name__)
 BASE_DIR = Path(__file__).resolve().parent.parent.parent

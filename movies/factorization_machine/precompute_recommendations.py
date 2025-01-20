@@ -1,10 +1,5 @@
 from django.conf import settings
-
-if not settings.configured:
-    import os
-    import django
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movies.settings")
-    django.setup()
+import os
 
 import json
 
