@@ -1,9 +1,12 @@
-import json
-import os
-import django
+from django.conf import settings
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movies.settings")
-django.setup()
+if not settings.configured:
+    import os
+    import django
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movies.settings")
+    django.setup()
+
+import json
 
 from movie.models import Movie, MovieMetaData, Rating
 from playlist.models import Playlist

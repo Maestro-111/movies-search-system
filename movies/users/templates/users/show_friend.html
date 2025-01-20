@@ -18,6 +18,13 @@
     </nav>
 
     <nav>
+        <p><a href="{% url 'users:view_friends' %}" class="bold-link">Return to Friends Page</a></p>
+    </nav>
+
+    <nav>
         <p><a href="{% url 'users:user_add_friends' user_id %}" class="bold-link">Add friend</a></p>
     </nav>
+
+
+
 {% endblock %}

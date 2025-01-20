@@ -8,7 +8,7 @@ import pandas as pd
 from pathlib import Path
 import os
 from config.logger_config import system_logger
-from .XGB_classifier import MovieRankingXGB
+from .XGB_ranker import MovieRankingXGB
 import sys
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent

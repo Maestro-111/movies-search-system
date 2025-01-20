@@ -1,9 +1,9 @@
 import pandas as pd
-from populate_mixin import populate_mixin
+from populatemixin import PopulateMixin
 import psycopg2
 
 
-class populate_metadata(populate_mixin):
+class PopulateMetadata(PopulateMixin):
     def __init__(self):
         super().__init__("movies_metadata")
 

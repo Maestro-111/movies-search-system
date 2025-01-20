@@ -1,12 +1,12 @@
 import pandas as pd
 import psycopg2
 from dotenv import load_dotenv, find_dotenv
-from populate_mixin import populate_mixin
+from populatemixin import PopulateMixin
 
 load_dotenv(find_dotenv())
 
 
-class populate_actors(populate_mixin):
+class PopulateActors(PopulateMixin):
     def __init__(self):
         super().__init__("movie_actors")
 

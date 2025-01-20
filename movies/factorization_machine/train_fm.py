@@ -5,7 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
 
-from XGB_classifier import MovieRankingXGB
+from .XGB_ranker import MovieRankingXGB
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 

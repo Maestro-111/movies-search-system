@@ -122,6 +122,5 @@ python generate_image_embeddings.py
 2. front-end (cont)
 3. Fix .dockerignore issue (e.g. not ignoring sqlite files)
 4. Continue updating friends section within users. Final goal is to have more info for recommendations
-5. Change XGB from classification to ranker
-6. Update celery task
-7. When user is created we have to add profile
+5. Imporve the ranker
+6. User summary button (cont)

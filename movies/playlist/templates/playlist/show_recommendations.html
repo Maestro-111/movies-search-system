@@ -6,6 +6,8 @@
 
 {% block content %}
 
+    {% load static   %}
+
     {% if error_message %}
         <p style="color: red;">{{ error_message }}</p>
     {% endif %}
@@ -49,10 +51,16 @@
         </section>
     {% endif %}
 
+    <div id="loading" style="display: none; text-align: center; margin-top: 20px;">
+        <p>Loading...</p>
+    </div>
+
 
     <nav>
         <p><a href="{% url 'playlist_menu' %}" class="bold-link">Return to the playlist menu</a></p>
     </nav>
+
+    <script src="{% static 'playlist/javascript/loader.js' %}"></script>
 
 
 {% endblock %}

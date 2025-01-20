@@ -1,9 +1,9 @@
-from populate_mixin import populate_mixin
+from populatemixin import PopulateMixin
 import psycopg2
 import pandas as pd
 
 
-class populate_movie_languages(populate_mixin):
+class PopulateMovieLanguages(PopulateMixin):
     def __init__(self):
         super().__init__("language_movies")
 
