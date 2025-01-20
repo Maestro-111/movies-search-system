@@ -12,13 +12,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db.models import Q
 
+from populate_database.populate_user_profile import PopulateUserProfile
 
-def create_user_info(username):
+
+def create_user_info(request, username):
 
     context = {}
 
     user = User.objects.get(username=username)
-    is_friend = Friendship.objects.filter(user=user).exists()
+
+    friends = Friendship.objects.filter(user=user)
+    is_friend = friends.filter(friend=request.user).exists()
 
     context['user_name'] = username
     context['user_email'] = user.email
@@ -27,6 +31,10 @@ def create_user_info(username):
     context['user_id'] = user.id
 
     return context
+
+@login_required
+def user_summary(request):
+    return HttpResponse("Im here")
 
 
 
@@ -40,7 +48,7 @@ def user_add_friends(request, friend_id):
     user = request.user
 
     friend = get_object_or_404(User, id=friend_id)
-    context = create_user_info(friend.username)
+    context = create_user_info(request, friend.username)
 
 
     if user == friend:
@@ -76,7 +84,7 @@ def user_add_friends(request, friend_id):
 
 def show_user(request, username):
 
-    context = create_user_info(username)
+    context = create_user_info(request, username)
     return render(request, "users/show_friend.html", context=context)
 
 
@@ -114,6 +122,8 @@ def user_search(request):
 
         users_with_profiles = users.select_related("profile")
 
+        print(users_with_profiles)
+
     return render(request, "users/user_search.html", {"users": users_with_profiles})
 
 
@@ -143,10 +153,18 @@ def login_user(request):
 def register_user(request):
     if request.method == "POST":
         form = RegisterUserForm(request.POST)
+
         if form.is_valid():
+            # Create user but don't save to DB yet
             user = form.save(commit=False)
             user.set_password(form.cleaned_data["password"])
+            # Save user to DB to get the ID
             user.save()
+
+            # Now we have the user.id available
+            user_profile = PopulateUserProfile(user_id=user.id)  # Pass user_id here
+            user_profile.run()
+
             messages.success(
                 request,
                 f"Registration successful! You can now log in as {user.username}",

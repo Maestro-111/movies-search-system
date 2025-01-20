@@ -6,6 +6,7 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <style>
+
         .button-container {
             display: flex;
             justify-content: center;
@@ -20,6 +21,23 @@
         h1, h2, h3 {
             text-align: center;
         }
+
+        .header-form {
+        margin: 0;
+        padding: 0;
+    }
+
+    .header-button {
+        padding: 5px 10px;
+        background-color: #007BFF; /* Blue background */
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 1em;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
     </style>
 </head>
 <body>
@@ -29,10 +47,14 @@
         <p>You are logged in as {{ user.username }}</p>
         <div style="position: absolute; top: 20px; right: 20px;">
             {% block action_buttons %}
-                <form action="{% url 'users:view_friends' %}" method="get">
-                    <button type="submit" style="padding: 5px 10px;">View Friends</button>
+                <form action="{% url 'users:view_friends' %}" method="get" class="header-form">
+                    <button type="submit" class="header-button">View Friends</button>
                 </form>
             {% endblock %}
+
+            <form action="{% url 'users:user_summary' %}" method="get" class="header-form" style="margin-top: 10px;">
+                    <button type="submit" class="header-button">Get User Summary</button>
+            </form>
         </div>
     {% else %}
         <p>You are not logged in.</p>

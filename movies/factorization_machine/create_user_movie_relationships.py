@@ -1,8 +1,11 @@
 import os
 import django
 
+
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movies.settings")
 django.setup()
+
+
 
 from django.conf import settings
 
@@ -10,7 +13,7 @@ from django.contrib.auth.models import User
 from django.utils.crypto import get_random_string
 
 
-from movie.models import Movie, Rating, MovieMetaData, MovieActor, MovieGenres, MovieLanguages
+from movie.models import Movie, Rating, MovieMetaData, MovieGenres, MovieLanguages
 from playlist.models import Playlist
 
 from django.db.models import Avg
@@ -77,8 +80,6 @@ def create_populate_playlists(n_playlists, n_movies, users=None):
         return
 
     genres = MovieGenres.objects.all()
-    years = movies.values_list("year", flat=True).distinct()
-    languages = MovieLanguages.objects.all()
 
     for user in users:
 
@@ -350,9 +351,11 @@ def remove_random_data():
 
 if __name__ == "__main__":
     #
-    create_users(100)
-    create_populate_playlists(40, 20)
-    assign_ratings_via_playlists()
+    # create_users(100)
+    # create_populate_playlists(40, 20)
+    # assign_ratings_via_playlists()
 
     # remove_random_data()
-    output_data(output_file=os.path.join(BASE_DIR, "movies/data/ratings_data.xlsx"))
+    # output_data(output_file=os.path.join(BASE_DIR, "movies/data/ratings_data.xlsx"))
+
+    print("!")

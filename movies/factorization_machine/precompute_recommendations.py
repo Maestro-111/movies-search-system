@@ -1,9 +1,7 @@
-import json
+from django.conf import settings
 import os
-import django
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "movies.settings")
-django.setup()
+import json
 
 from movie.models import Movie, MovieMetaData, Rating
 from playlist.models import Playlist
@@ -41,6 +39,8 @@ def user_playlist_recommendations():
 
             cache_key = f"{user.id}_{playlist.id}_playlist_recommendations"
             cache.set(cache_key, json.dumps(movie_ids), timeout=86400)  # Cache for 24 hours
+
+        break
 
 
 def user_all_recommendations():

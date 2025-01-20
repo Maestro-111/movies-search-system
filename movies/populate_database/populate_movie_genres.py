@@ -1,11 +1,11 @@
-from populate_mixin import populate_mixin
+from populatemixin import PopulateMixin
 import psycopg2
 import pandas as pd
 
 
-class populate_movie_languages(populate_mixin):
+class PopulateMovieGenres(PopulateMixin):
     def __init__(self):
-        super().__init__("language_movies")
+        super().__init__("genres_movies")
 
     def run(self):
         conn = psycopg2.connect(
@@ -40,7 +40,7 @@ class populate_movie_languages(populate_mixin):
 
                 count -= 1
 
-            statement = f"INSERT INTO movie_movie_languages (movie_id,movielanguages_id)" f" VALUES ({parsed_vales});"
+            statement = f"INSERT INTO movie_movie_genres (movie_id,moviegenres_id)" f" VALUES ({parsed_vales});"
 
             print(statement)
 

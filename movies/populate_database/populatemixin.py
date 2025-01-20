@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 
 
-class populate_mixin:
+class PopulateMixin:
     BASE_DIR = Path(__file__).resolve().parent.parent
 
     def __init__(self, excel_name=None):

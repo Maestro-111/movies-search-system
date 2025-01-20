@@ -1,11 +1,11 @@
 import pandas as pd
-from populate_mixin import populate_mixin
+from populatemixin import PopulateMixin
 import psycopg2
 
 
-class populate_metadata(populate_mixin):
+class PopulateGenres(PopulateMixin):
     def __init__(self):
-        super().__init__("movies_metadata")
+        super().__init__("genres")
 
     def run(self):
         conn = psycopg2.connect(
@@ -17,6 +17,7 @@ class populate_metadata(populate_mixin):
         )
 
         df = pd.read_excel(self.df_path, index_col=0)
+
         cursor = conn.cursor()
 
         for row in df.itertuples(index=False):
@@ -39,7 +40,7 @@ class populate_metadata(populate_mixin):
 
                 count -= 1
 
-            statement = f"INSERT INTO movie_moviemetadata" f" VALUES ({parsed_vales});"
+            statement = f"INSERT INTO movie_moviegenres (genre,genre_id)" f" VALUES ({parsed_vales});"
 
             print(statement)
 

@@ -11,3 +11,14 @@ document.querySelectorAll('form').forEach(function(form) {
         document.getElementById('loading').style.display = 'block';
     });
 });
+
+
+document.addEventListener('DOMContentLoaded', function () {
+    const movieLinks = document.querySelectorAll('a'); // Get all anchor tags
+    movieLinks.forEach(function (link) {
+        link.addEventListener('click', function () {
+            document.getElementById('loading').style.display = 'block';
+        });
+    });
+
+});

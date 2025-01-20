@@ -1,9 +1,9 @@
-from populate_mixin import populate_mixin
+from populatemixin import PopulateMixin
 import psycopg2
 import pandas as pd
 
 
-class populate_movie_actors(populate_mixin):
+class PopulateMovieActors(PopulateMixin):
     def __init__(self):
         super().__init__("movie_actors")
 

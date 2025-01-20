@@ -1,11 +1,11 @@
-from populate_mixin import populate_mixin
+from populatemixin import PopulateMixin
 import psycopg2
 import pandas as pd
 from pathlib import Path
 import os
 
 
-class populate_movies(populate_mixin):
+class PopulateMovies(PopulateMixin):
     def __init__(self):
         super().__init__("movies")
         self.base_dir = Path(__file__).resolve().parent.parent
