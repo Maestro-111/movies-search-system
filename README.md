@@ -123,4 +123,7 @@ python generate_image_embeddings.py
 3. Fix .dockerignore issue (e.g. not ignoring sqlite files)
 4. Continue updating friends section within users. Final goal is to have more info for recommendations
 5. Imporve the ranker
-6. User summary button (cont: add topic modeling upon descriptions of user movies)
+6. LDA
+   1. Update/decompose code to train (LDA)
+   2. Now LDA is for all movies. What about LDA for each playlist?
+   3. Similar - what about show function for each playlist?

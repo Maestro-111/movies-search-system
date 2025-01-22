@@ -113,3 +113,19 @@ class MovieLanguages(models.Model):
 
     def __str__(self):
         return str(self.language)
+
+
+class UserTopicDistribution(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    distribution = models.JSONField()
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class TopicDescription(models.Model):
+
+    topic_id = models.IntegerField(primary_key=True)
+    top_words = models.JSONField()
+
+    label = models.CharField(max_length=100, null=True)
