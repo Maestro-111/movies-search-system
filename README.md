@@ -2,10 +2,10 @@
 
 ## Abstract
 This is a Django web app that allows user searching for their favorite movies.
-Also, for each movie system will provide up to 10 recommendations.
+Also, for each selected movie system will provide up to 10 recommendations.
 
-User can create their playlist and based on movies in playlist they will get 3 recommendations per movie.
-Finally, user may view recommendations based on all movies in their playlist (this is the most time-consuming part)
+Additionally, user can create their own playlists and based on movies in playlist they will get 3 recommendations per movie.
+Finally, user may view recommendations based on all movies in all their playlist (this is the most time-consuming part)
 
 Right now database, which is PostgresSQL, contains around 25k movies and related information.
 
@@ -62,10 +62,16 @@ PostgresSQL is used to store it.
 3) We use Reddis to store the precomputed recommendations
 
 
-### Celery (not fully implemented yet)
+### LDA (integrating...)
+
+1) We use LDA to analyze the topics of users movies (globally) and display topics to user
+
+### Celery (integrating...)
 
 1) Recommendation computation is quite time-consuming. We use celery to schedule a background task that re-trains XGB and computes recommendations for each user
 2) We store recommendations in Reddis. Then, when user wants to see their recommendations, we just retrieve info from Reddis.
+3) LDA training/output procedure should also be configured for Celery worker.
+
 
 
 ## Project Set Up
