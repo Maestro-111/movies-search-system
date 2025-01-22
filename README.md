@@ -123,4 +123,4 @@ python generate_image_embeddings.py
 3. Fix .dockerignore issue (e.g. not ignoring sqlite files)
 4. Continue updating friends section within users. Final goal is to have more info for recommendations
 5. Imporve the ranker
-6. User summary button (cont)
+6. User summary button (cont: add topic modeling upon descriptions of user movies)
