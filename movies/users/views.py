@@ -44,6 +44,7 @@ def get_user_topics_all(request):
     user = request.user
 
     try:
+
         user_dist = UserTopicDistribution.objects.get(user=user)
         distributions = user_dist.distribution
 
@@ -55,6 +56,7 @@ def get_user_topics_all(request):
         distributions = distributions[:5]
 
         for topic_idx, prob in enumerate(distributions):
+
             topic_desc = TopicDescription.objects.get(topic_id=topic_idx)
 
             topic_descriptions.append(
@@ -65,7 +67,6 @@ def get_user_topics_all(request):
              }
             )
 
-        print(topic_descriptions)
         return JsonResponse({"topics": topic_descriptions})  # Wrap in {"topics": ...}
 
     except UserTopicDistribution.DoesNotExist:

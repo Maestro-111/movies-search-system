@@ -71,6 +71,11 @@
     </nav>
 
     <nav>
+        <p><a href="{% url 'users:user_summary' %}" class="bold-link loading-link">Summarize this playlist wth LDA</a></p>
+    </nav>
+
+
+    <nav>
         <p><a href="{% url 'get_recommendation_for_playlist' playlist.id %}" class="bold-link loading-link">View Recommendations for this playlist</a></p>
     </nav>
 

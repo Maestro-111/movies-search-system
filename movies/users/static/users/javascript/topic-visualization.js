@@ -1,26 +1,20 @@
 function createTopicVisualization(containerId) {
-
     const container = document.getElementById(containerId);
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 
-
     svg.setAttribute("viewBox", "0 0 800 600");
-
     svg.style.width = "100%";
     svg.style.height = "100%";
-
     svg.style.maxWidth = "800px";
-
     container.appendChild(svg);
 
     let topics = [
-                { id: 1, name: "Action", importance: 0.8 },
-                { id: 2, name: "Drama", importance: 0.6 },
-                { id: 3, name: "Comedy", importance: 0.4 },
-                { id: 4, name: "Romance", importance: 0.3 },
-                { id: 5, name: "Thriller", importance: 0.7 }
+        { id: 1, name: "Action", importance: 0.8 },
+        { id: 2, name: "Drama", importance: 0.6 },
+        { id: 3, name: "Comedy", importance: 0.4 },
+        { id: 4, name: "Romance", importance: 0.3 },
+        { id: 5, name: "Thriller", importance: 0.7 }
     ];
-
 
     function calculatePositions() {
         const centerX = 400;
@@ -41,10 +35,8 @@ function createTopicVisualization(containerId) {
         return minSize + (maxSize - minSize) * importance;
     }
 
-    const topicsWithPositions = calculatePositions();
-
-    topicsWithPositions.forEach(topic => {
-
+    // Extract the duplicate code into a function
+    function renderTopic(topic, svg) {
         const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
         group.setAttribute("transform", `translate(${topic.x},${topic.y})`);
 
@@ -75,46 +67,16 @@ function createTopicVisualization(containerId) {
         group.appendChild(circle);
         group.appendChild(text);
         svg.appendChild(group);
-    });
+    }
+
+    // Initial render
+    calculatePositions().forEach(topic => renderTopic(topic, svg));
 
     return {
         updateTopics: function(newTopics) {
             svg.innerHTML = "";
             topics = newTopics;
-            const updatedPositions = calculatePositions();
-            updatedPositions.forEach(topic => {
-
-                const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-                group.setAttribute("transform", `translate(${topic.x},${topic.y})`);
-
-                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                circle.setAttribute("r", getCircleSize(topic.importance) / 2);
-                circle.style.fill = "#BFDBFE";
-                circle.style.stroke = "#3B82F6";
-                circle.style.strokeWidth = "2";
-                circle.style.opacity = "0.8";
-                circle.style.cursor = "pointer";
-
-                circle.addEventListener("mouseenter", () => {
-                    circle.style.opacity = "1";
-                    showTopicDetails(topic);
-                });
-                circle.addEventListener("mouseleave", () => {
-                    circle.style.opacity = "0.8";
-                });
-
-                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                text.textContent = topic.name;
-                text.setAttribute("text-anchor", "middle");
-                text.setAttribute("dy", ".3em");
-                text.style.fill = "#374151";
-                text.style.fontSize = "14px";
-                text.style.fontWeight = "500";
-
-                group.appendChild(circle);
-                group.appendChild(text);
-                svg.appendChild(group);
-            });
+            calculatePositions().forEach(topic => renderTopic(topic, svg));
         }
     };
 }
@@ -158,12 +120,12 @@ function updateTopicStats(topics) {
 document.addEventListener('DOMContentLoaded', function() {
 
     const visualization = createTopicVisualization('topic-container');
-    const topicsUrl = "{% url 'users:get_user_topics_all' %}";
+
+    console.log("Here I am");
 
     fetch('/users/get_user_topics_all/')
         .then(response => response.json())
         .then(data => {
-            console.log(data.topics)
             visualization.updateTopics(data.topics);
             updateTopicStats(data.topics);  // Add this line
         })

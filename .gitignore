@@ -14,3 +14,4 @@ problemseta.py
 passwords.txt
 *.pth
 *.db
+LDA/perplexity_plot.png
