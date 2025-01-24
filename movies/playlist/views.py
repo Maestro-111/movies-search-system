@@ -1,17 +1,22 @@
 import json
 
 from django.contrib.auth.decorators import login_required
+from django.http.response import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.http import HttpResponseRedirect
 from django.db import IntegrityError
-from movie.models import Movie, MovieMetaData, Rating
+
+import playlist
+from movie.models import Movie, MovieMetaData, Rating, UserTopicDistribution, TopicDescription
 from .models import Playlist
 from .forms import PlaylistForm, RatingForm
 
 from django.conf import settings
+
 from factorization_machine.recommendations import produce_recommendations
 from factorization_machine.recommendations import get_combined_features
+
 from  factorization_machine.precompute_recommendations import group_recommendation
 
 from gensim.models import Word2Vec
@@ -84,6 +89,7 @@ def remove_movie_from_playlist(request, playlist_id, movie_id):
 
 @login_required
 def view_single_playlist(request, playlist_id: int):
+
     playlist = get_object_or_404(Playlist, id=playlist_id)
     movies = playlist.movie.all()
 
@@ -144,6 +150,53 @@ def view_single_playlist(request, playlist_id: int):
     }
 
     return render(request, "playlist/view_single_playlist.html", context)
+
+
+
+
+@login_required
+def get_user_playlist_topics(request, playlist_id):
+
+
+    user = request.user
+    playlist = get_object_or_404(Playlist, id=playlist_id)
+
+    try:
+
+        user_playlist_dist = UserTopicDistribution.objects.get(user=user, playlist=playlist)
+        distributions = user_playlist_dist.distribution
+
+        print(distributions)
+
+        topic_descriptions = []
+
+        distributions = sorted(distributions, reverse=True)
+        distributions = distributions[:10]
+
+        for topic_idx, prob in enumerate(distributions):
+
+            topic_desc = TopicDescription.objects.get(topic_id=topic_idx)
+
+            topic_descriptions.append(
+                {
+                'importance': prob,
+                'name': "_".join(list(topic_desc.top_words)[:3]),
+                'id': topic_idx
+             }
+            )
+
+        return JsonResponse({"topics": topic_descriptions})  # Wrap in {"topics": ...}
+
+    except UserTopicDistribution.DoesNotExist:
+        return JsonResponse({"topics": []})
+
+
+@login_required
+def playlist_lda_summary(request, playlist_id):
+
+    return render(request, "playlist/show_user_topics.html", context={"playlist_id": playlist_id})
+
+
 
 
 @login_required

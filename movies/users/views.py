@@ -38,46 +38,6 @@ def create_user_info(request, username):
 
 
 
-@login_required
-def get_user_topics_all(request):
-
-    user = request.user
-
-    try:
-
-        user_dist = UserTopicDistribution.objects.get(user=user)
-        distributions = user_dist.distribution
-
-        print(distributions)
-
-        topic_descriptions = []
-
-        distributions = sorted(distributions, reverse=True)
-        distributions = distributions[:5]
-
-        for topic_idx, prob in enumerate(distributions):
-
-            topic_desc = TopicDescription.objects.get(topic_id=topic_idx)
-
-            topic_descriptions.append(
-                {
-                'importance': prob,
-                'name': "_".join(list(topic_desc.top_words)[:3]),
-                'id': topic_idx
-             }
-            )
-
-        return JsonResponse({"topics": topic_descriptions})  # Wrap in {"topics": ...}
-
-    except UserTopicDistribution.DoesNotExist:
-        return JsonResponse({"topics": []})
-
-
-@login_required
-def user_summary(request):
-    return render(request, "users/show_user_topics.html")
-
-
 
 def user_home(request):
     return render(request, "users/user_home.html")

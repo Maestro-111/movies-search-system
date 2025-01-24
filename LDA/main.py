@@ -53,8 +53,6 @@ def prepare_user_documents():
         if not user_playlists:
             continue
 
-        user_text = []
-
         for playlist in user_playlists:
             movies = playlist.movie.filter(languages=english_language)
 
@@ -67,19 +65,17 @@ def prepare_user_documents():
                 if movie.overview
             ])
 
+
             if user_playlist_text:
-                user_text.append(user_playlist_text)
+                user_documents[str(user.id)+"!"+str(playlist.id)] = user_playlist_text
 
-        if user_text:
-            text = " ".join(user_text)
-            if len(text.split()) >= 0:
-                user_documents[user.id] = text
-
+    i = 5
     for user in user_documents:
 
-        print(user)
-        print(user_documents[user])
-        print()
+        if not i:
+            break
+
+        i -= 5
 
     print("Gathered data for all users!")
 
@@ -158,7 +154,7 @@ def get_topic_words(lda_model, vectorizer, n_words=10):
 
 
 
-def train_lda(doc_term_matrix, topic_numbers=25):
+def train_lda(doc_term_matrix, topic_numbers=75):
 
     lda = LatentDirichletAllocation(
         n_components=topic_numbers,
@@ -177,7 +173,7 @@ import matplotlib.pyplot as plt
 
 def plot_perplexity_scores(doc_term_matrix):
 
-    topic_numbers = range(1,10,1)
+    topic_numbers = range(1,75,5)
     perplexities = []
 
     for n_topics in topic_numbers:
@@ -214,10 +210,13 @@ def train_user_movie_lda():
     UserTopicDistribution.objects.all().delete()
     TopicDescription.objects.all().delete()
 
-    for user_id, topic_dist in zip(user_documents.keys(), user_topic_distributions):
+    for id, topic_dist in zip(user_documents.keys(), user_topic_distributions):
+
+        user_id,playlist_id = id.split("!")
 
         UserTopicDistribution.objects.update_or_create(
             user_id=user_id,
+            playlist_id=playlist_id,
             defaults={'distribution': topic_dist.tolist()}
         )
 

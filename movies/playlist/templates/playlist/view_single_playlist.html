@@ -4,6 +4,19 @@
 
 {% block header %}Playlists{% endblock %}
 
+
+{% block action_buttons %}
+
+    <form action="{% url 'users:view_friends' %}" method="get" class="header-form">
+        <button type="submit" class="header-button">View Friends</button>
+    </form>
+
+    <form action="{% url 'playlist_lda_summary' playlist.id %}" method="get" class="header-form" style="margin-top: 10px;">
+        <button type="submit" class="header-button">Get Playlist Summary</button>
+    </form>
+
+{% endblock %}
+
 {% block content %}
 
     {% load my_tags %}
@@ -68,10 +81,6 @@
 
     <nav>
         <p><a href="{% url 'view_playlists' %}" class="bold-link loading-link">Return to your playlists</a></p>
-    </nav>
-
-    <nav>
-        <p><a href="{% url 'users:user_summary' %}" class="bold-link loading-link">Summarize this playlist wth LDA</a></p>
     </nav>
 
 

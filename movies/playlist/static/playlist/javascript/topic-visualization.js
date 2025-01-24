@@ -1,4 +1,5 @@
 function createTopicVisualization(containerId) {
+    
     const container = document.getElementById(containerId);
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 
@@ -121,9 +122,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const visualization = createTopicVisualization('topic-container');
 
+    const topicContainer = document.getElementById('topic-container');
+    const playlistId = topicContainer.dataset.playlistId;
+
     console.log("Here I am");
 
-    fetch('/users/get_user_topics_all/')
+    fetch(`/playlist/get_user_playlist_topics/${playlistId}/`)
         .then(response => response.json())
         .then(data => {
             visualization.updateTopics(data.topics);

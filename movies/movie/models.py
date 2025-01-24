@@ -3,6 +3,7 @@ from django.urls import reverse
 import pandas as pd
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.apps import apps
 
 
 class Movie(models.Model):
@@ -118,6 +119,7 @@ class MovieLanguages(models.Model):
 class UserTopicDistribution(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    playlist = models.ForeignKey("playlist.Playlist", on_delete=models.CASCADE, default=None)
     distribution = models.JSONField()
 
     updated_at = models.DateTimeField(auto_now=True)
