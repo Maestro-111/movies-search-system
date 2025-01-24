@@ -22,6 +22,8 @@ from movie.models import MovieLanguages, UserTopicDistribution, TopicDescription
 
 import string
 
+N = 150
+
 """
 
 Train LDA on user/playlist
@@ -154,10 +156,10 @@ def get_topic_words(lda_model, vectorizer, n_words=10):
 
 
 
-def train_lda(doc_term_matrix, topic_numbers=75):
+def train_lda(doc_term_matrix):
 
     lda = LatentDirichletAllocation(
-        n_components=topic_numbers,
+        n_components=N,
         max_iter=30
     )
 
@@ -173,7 +175,7 @@ import matplotlib.pyplot as plt
 
 def plot_perplexity_scores(doc_term_matrix):
 
-    topic_numbers = range(1,75,5)
+    topic_numbers = range(1,120,5)
     perplexities = []
 
     for n_topics in topic_numbers:

@@ -64,7 +64,9 @@ PostgresSQL is used to store it.
 
 ### LDA (integrating...)
 
-1) We use LDA to analyze the topics of users movies (globally) and display topics to user
+1) We use LDA to analyze the topics of users movies (per user playlist) and display topics to user
+
+<img width="1300" alt="teaser" src="./figure/topics.png">
 
 ### Celery (integrating...)
 

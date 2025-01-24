@@ -1,5 +1,5 @@
 function createTopicVisualization(containerId) {
-    
+
     const container = document.getElementById(containerId);
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 
@@ -36,10 +36,53 @@ function createTopicVisualization(containerId) {
         return minSize + (maxSize - minSize) * importance;
     }
 
-    // Extract the duplicate code into a function
-    function renderTopic(topic, svg) {
+    let draggedElement = null;
+    let offset = { x: 0, y: 0 };
+
+    function handleDragStart(event, group) {
+
+        draggedElement = group;
+
+        const transform = group.getAttribute("transform");
+        const translate = transform.match(/translate\(([^,]+),([^)]+)\)/);
+        const currentX = parseFloat(translate[1]);
+        const currentY = parseFloat(translate[2]);
+
+        const svg = group.ownerSVGElement;
+        const pt = svg.createSVGPoint();
+        pt.x = event.clientX;
+        pt.y = event.clientY;
+        const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        offset.x = currentX - svgP.x;
+        offset.y = currentY - svgP.y;
+    }
+
+    function handleDrag(event) {
+        if (!draggedElement) return;
+
+        event.preventDefault();
+
+        const svg = draggedElement.ownerSVGElement;
+        const pt = svg.createSVGPoint();
+        pt.x = event.clientX;
+        pt.y = event.clientY;
+        const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+        draggedElement.setAttribute(
+            "transform",
+            `translate(${svgP.x + offset.x},${svgP.y + offset.y})`
+        );
+    }
+
+    function handleDragEnd() {
+        draggedElement = null;
+    }
+
+    function renderTopic(topic, position) {
+
         const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        group.setAttribute("transform", `translate(${topic.x},${topic.y})`);
+        group.setAttribute("transform", `translate(${position.x},${position.y})`);
 
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         circle.setAttribute("r", getCircleSize(topic.importance) / 2);
@@ -47,7 +90,13 @@ function createTopicVisualization(containerId) {
         circle.style.stroke = "#3B82F6";
         circle.style.strokeWidth = "2";
         circle.style.opacity = "0.8";
-        circle.style.cursor = "pointer";
+        circle.style.cursor = "grab"; // Change cursor to indicate draggable
+
+        // Add drag handlers
+        group.addEventListener("mousedown", (e) => handleDragStart(e, group));
+        svg.addEventListener("mousemove", handleDrag);
+        svg.addEventListener("mouseup", handleDragEnd);
+        svg.addEventListener("mouseleave", handleDragEnd);
 
         circle.addEventListener("mouseenter", () => {
             circle.style.opacity = "1";
@@ -64,23 +113,32 @@ function createTopicVisualization(containerId) {
         text.style.fill = "#374151";
         text.style.fontSize = "14px";
         text.style.fontWeight = "500";
+        text.style.pointerEvents = "none"; // Prevent text from interfering with drag
 
         group.appendChild(circle);
         group.appendChild(text);
-        svg.appendChild(group);
+        return group;
     }
 
-    // Initial render
-    calculatePositions().forEach(topic => renderTopic(topic, svg));
 
-    return {
+    calculatePositions().forEach(topic => {
+        const group = renderTopic(topic, {x: topic.x, y: topic.y});
+        svg.appendChild(group);
+    });
+
+     return {
         updateTopics: function(newTopics) {
             svg.innerHTML = "";
             topics = newTopics;
-            calculatePositions().forEach(topic => renderTopic(topic, svg));
+            const updatedPositions = calculatePositions();
+            updatedPositions.forEach(topic => {
+                const group = renderTopic(topic, {x: topic.x, y: topic.y});
+                svg.appendChild(group);
+            });
         }
     };
 }
+
 
 function showTopicDetails(topic) {
     const detailsDiv = document.getElementById('topic-details');
@@ -94,12 +152,12 @@ function showTopicDetails(topic) {
 
 
 function updateTopicStats(topics) {
-    const statsDiv = document.getElementById('topic-stats');
 
-    // Sort topics by importance
+    const statsDiv = document.getElementById('topic-stats');
     const sortedTopics = [...topics].sort((a, b) => b.importance - a.importance);
 
     let statsHTML = '<div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px;">';
+
     sortedTopics.forEach(topic => {
         statsHTML += `
             <div style="margin-bottom: 10px;">
@@ -113,8 +171,8 @@ function updateTopicStats(topics) {
             </div>
         `;
     });
-    statsHTML += '</div>';
 
+    statsHTML += '</div>';
     statsDiv.innerHTML = statsHTML;
 }
 
