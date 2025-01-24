@@ -1,7 +1,10 @@
 from django.contrib.auth import authenticate, login, logout
 from django.core.paginator import Paginator
 from django.http import HttpResponse, HttpResponseRedirect
+from django.http.response import JsonResponse
 from django.shortcuts import render, reverse, get_object_or_404, redirect
+
+from movie.models import UserTopicDistribution, TopicDescription
 from .forms import LoginUserForm, RegisterUserForm, ChangePasswordForm
 from .models import Friendship, Profile
 from django.contrib import messages
@@ -13,6 +16,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 
 from populate_database.populate_user_profile import PopulateUserProfile
+
 
 
 def create_user_info(request, username):
@@ -32,9 +36,6 @@ def create_user_info(request, username):
 
     return context
 
-@login_required
-def user_summary(request):
-    return HttpResponse("Im here")
 
 
 

@@ -35,4 +35,11 @@ urlpatterns = [
         views.get_recommendation_for_playlist,
         name="get_recommendation_for_playlist",
     ),
+    path("playlist_lda_summary/<int:playlist_id>/",
+         views.playlist_lda_summary,
+         name="playlist_lda_summary"),
+
+    path("get_user_playlist_topics/<int:playlist_id>/",
+         views.get_user_playlist_topics,
+         name="get_user_playlist_topics",),
 ]

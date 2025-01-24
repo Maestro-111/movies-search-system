@@ -3,6 +3,7 @@ from django.urls import reverse
 import pandas as pd
 from django.conf import settings
 from django.contrib.auth.models import User
+from django.apps import apps
 
 
 class Movie(models.Model):
@@ -113,3 +114,20 @@ class MovieLanguages(models.Model):
 
     def __str__(self):
         return str(self.language)
+
+
+class UserTopicDistribution(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    playlist = models.ForeignKey("playlist.Playlist", on_delete=models.CASCADE, default=None)
+    distribution = models.JSONField()
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class TopicDescription(models.Model):
+
+    topic_id = models.IntegerField(primary_key=True)
+    top_words = models.JSONField()
+
+    label = models.CharField(max_length=100, null=True)
