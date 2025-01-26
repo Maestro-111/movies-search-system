@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Start the appropriate service based on the command argument
 export PYTHONPATH="/app/movies:${PYTHONPATH}"
 
 case "$1" in
@@ -14,7 +13,6 @@ case "$1" in
         celery -A movies beat -l INFO
         ;;
     *)
-        # Default to running whatever command was passed
         exec "$@"
         ;;
 esac

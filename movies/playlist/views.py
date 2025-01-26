@@ -168,12 +168,14 @@ def get_user_playlist_topics(request, playlist_id):
 
         print(distributions)
 
+        distributions = [(index,distribution) for index,distribution in enumerate(distributions)]
+
         topic_descriptions = []
 
-        distributions = sorted(distributions, reverse=True)
+        distributions = sorted(distributions, key=lambda x : x[1], reverse=True)
         distributions = distributions[:10]
 
-        for topic_idx, prob in enumerate(distributions):
+        for topic_idx,prob in distributions:
 
             topic_desc = TopicDescription.objects.get(topic_id=topic_idx)
 

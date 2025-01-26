@@ -22,7 +22,7 @@ from movie.models import MovieLanguages, UserTopicDistribution, TopicDescription
 
 import string
 
-N = 150
+N = 350
 
 """
 
@@ -129,7 +129,7 @@ def preprocess_documents(user_documents):
         min_df=1,
         stop_words='english',
         token_pattern=r'(?u)\b[a-zA-Z]{3,}\b',
-        ngram_range=(1, 2)
+        ngram_range=(1, 3)
     )
 
     doc_term_matrix = vectorizer.fit_transform(user_documents.values())
@@ -160,7 +160,7 @@ def train_lda(doc_term_matrix):
 
     lda = LatentDirichletAllocation(
         n_components=N,
-        max_iter=30
+        max_iter=20
     )
 
     lda_output = lda.fit_transform(doc_term_matrix)
@@ -179,7 +179,7 @@ def plot_perplexity_scores(doc_term_matrix):
     perplexities = []
 
     for n_topics in topic_numbers:
-        lda = LatentDirichletAllocation(n_components=n_topics, max_iter=30)
+        lda = LatentDirichletAllocation(n_components=n_topics, max_iter=20)
         lda.fit(doc_term_matrix)
         perplexity = lda.perplexity(doc_term_matrix)
         perplexities.append(perplexity)
@@ -204,7 +204,7 @@ def train_user_movie_lda():
 
     print(f"Matrix sparsity: {sparsity}%")
 
-    # plot_perplexity_scores(doc_term_matrix)
+    plot_perplexity_scores(doc_term_matrix)
 
     lda_model, user_topic_distributions = train_lda(doc_term_matrix)
     topic_words = get_topic_words(lda_model, vectorizer)
