@@ -16,11 +16,11 @@ from dotenv import load_dotenv, find_dotenv
 import json
 
 from celery.schedules import crontab
-# import factorization_machine.tasks
 
 load_dotenv(find_dotenv())
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
+
 features = os.path.join(BASE_DIR, "movies/config/features.json")
 
 with open(features, "r") as json_file:
@@ -35,9 +35,6 @@ FEATURES = GENERAL + GENRES + SPOKEN_LANGUAGES
 
 METADATA_PATH = BASE_DIR / "movies" / "data" / "movies_metadata_short.xlsx"
 MODEL_DIR = BASE_DIR / "movies" / "word2vec.model"
-
-CELERY_BROKER_URL = "redis://127.0.0.1:6379/1" #'redis://redis:6379/0' # like in dockercompose
-CELERY_RESULT_BACKEND ="redis://127.0.0.1:6379/2"
 
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
@@ -90,6 +87,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = "movies.urls"
 
 TEMPLATES = [
+
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [BASE_DIR / "movies" / "templates"],
@@ -111,13 +109,6 @@ WSGI_APPLICATION = "movies.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-#
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 
 db_name = os.getenv("db_name")
 db_user_name = os.getenv("db_user_name")
@@ -133,17 +124,6 @@ DATABASES = {
         "PASSWORD": db_psw,
         "HOST": db_host,
         "PORT": db_port,
-    }
-}
-
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/0",  # "LOCATION": "redis://redis:6379/1" for container "redis://127.0.0.1:6379/1" for local
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        },
-        "TIMEOUT": 300,  # Cache timeout in seconds (5 minutes)
     }
 }
 
@@ -197,12 +177,8 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOGIN_URL = "users:login"
 
 
-
 CELERY_BEAT_SCHEDULE = {
-    # "model_pipeline": {
-    #     "task": "factorization_machine.tasks.model_pipeline",
-    #     "schedule": crontab(minute=0, hour=0),
-    # },
+
     "model_pipeline": {
         "task": "factorization_machine.tasks.model_pipeline",
          "schedule": crontab(minute="*/1"),
