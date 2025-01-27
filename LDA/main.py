@@ -71,13 +71,6 @@ def prepare_user_documents():
             if user_playlist_text:
                 user_documents[str(user.id)+"!"+str(playlist.id)] = user_playlist_text
 
-    i = 5
-    for user in user_documents:
-
-        if not i:
-            break
-
-        i -= 5
 
     print("Gathered data for all users!")
 

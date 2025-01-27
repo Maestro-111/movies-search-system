@@ -8,7 +8,8 @@ from django.http import HttpResponseRedirect
 from django.db import IntegrityError
 
 import playlist
-from movie.models import Movie, MovieMetaData, Rating, UserTopicDistribution, TopicDescription
+from movie.models import Movie, MovieMetaData, Rating, UserTopicDistribution, TopicDescription, MovieGenres, \
+    MovieLanguages
 from .models import Playlist
 from .forms import PlaylistForm, RatingForm
 
@@ -16,6 +17,8 @@ from django.conf import settings
 
 from factorization_machine.recommendations import produce_recommendations
 from factorization_machine.recommendations import get_combined_features
+
+from django.db.models import Count
 
 from  factorization_machine.precompute_recommendations import group_recommendation
 
@@ -196,7 +199,31 @@ def get_user_playlist_topics(request, playlist_id):
 @login_required
 def playlist_lda_summary(request, playlist_id):
 
-    return render(request, "playlist/show_user_topics.html", context={"playlist_id": playlist_id})
+    playlist = get_object_or_404(Playlist, id=playlist_id)
+    movies = playlist.movie.all()
+
+    movie_genres = MovieGenres.objects.filter(
+        genres__in=movies
+    ).annotate(
+        movie_count=Count('genres')
+    ).distinct()
+
+    movie_languages = MovieLanguages.objects.filter(
+        languages__in=movies
+    ).annotate(
+        movie_count=Count('languages')
+    ).distinct()
+
+    movie_genres = {genre.genre: genre.movie_count for genre in movie_genres}
+    movie_languages = {language.language: language.movie_count for language in movie_languages}
+
+    print(movie_genres)
+    print(movie_languages)
+
+    return render(request, "playlist/show_user_topics.html", context={"playlist_id": playlist_id,
+                                                                                    "movie_languages":movie_languages,
+                                                                                    "movie_genres":movie_genres
+                                                                                    })
 
 
 

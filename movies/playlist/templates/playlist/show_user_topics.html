@@ -105,6 +105,47 @@
             margin: 0 0 15px 0;
             color: #333;
         }
+        .stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .stat-count {
+            color: #666;
+            font-weight: 400;
+        }
+
+        /* Adjust grid for 4 boxes */
+        @media (min-width: 768px) {
+            .details-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .details-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
     </style>
 
 </head>
@@ -132,6 +173,7 @@
         </div>
 
         <div class="details-grid">
+            <!-- Existing boxes -->
             <div class="details-box">
                 <h2>Top Movies per Topic</h2>
                 <div id="topic-details">
@@ -143,6 +185,31 @@
                 <h2>Topic Distribution</h2>
                 <div id="topic-stats">
                     <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- New boxes for genres and languages -->
+            <div class="details-box">
+                <h2>Genre Distribution</h2>
+                <div class="stats-container">
+                    {% for genre, count in movie_genres.items %}
+                    <div class="stat-item">
+                        <span class="stat-label">{{ genre }}</span>
+                        <span class="stat-count">{{ count }} movies</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="details-box">
+                <h2>Language Distribution</h2>
+                <div class="stats-container">
+                    {% for language, count in movie_languages.items %}
+                    <div class="stat-item">
+                        <span class="stat-label">{{ language }}</span>
+                        <span class="stat-count">{{ count }} movies</span>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div>

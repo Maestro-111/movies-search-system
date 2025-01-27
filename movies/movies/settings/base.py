@@ -162,10 +162,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "/static/"
+
 STATICFILES_DIRS = [
     BASE_DIR / "movies" / "static",
 ]
 STATIC_ROOT = BASE_DIR / "movies" / "collected_static"
+
 
 if not os.path.exists(STATIC_ROOT):
     os.makedirs(STATIC_ROOT)

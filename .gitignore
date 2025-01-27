@@ -16,3 +16,4 @@ passwords.txt
 *.db
 LDA/perplexity_plot.png
 *.rdb
+/movies/collected_static/

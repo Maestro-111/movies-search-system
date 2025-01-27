@@ -4,7 +4,7 @@ register = template.Library()
 
 
 @register.filter
-def get_dict_value(dictionary, key):
+def get_dict_value(dictionary: object, key: object) -> object:
     """
     Custom filter to retrieve a value from a dictionary by key in templates.
     """
