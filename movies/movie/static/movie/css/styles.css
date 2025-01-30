@@ -102,19 +102,27 @@
     background-color: rgba(249, 249, 249, 0.77);
     border: 1px solid #ccc;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-    width: 250px; /* Default width */
-    height: auto; /* Allows height to adjust */
+    width: 250px;
+    height: auto;
     padding: 15px;
     border-radius: 10px;
-    resize: both; /* Enables both horizontal and vertical resizing */
-    overflow: auto; /* Ensures content remains accessible when resized */
+    resize: both;
+    overflow: auto;
+
+    cursor: move;    /* Shows it's draggable */
+    z-index: 1000;   /* Keeps it above other content */
 }
 
 
 /* Adjust font size and spacing dynamically */
 #chat_bot_request-form h4 {
     font-size: 1.5vw; /* Scales with the viewport */
-    margin-bottom: 1vw; /* Scales with the viewport */
+    /*margin-bottom: 1vw; !* Scales with the viewport *!*/
+    margin: 0 0 10px 0;
+    padding: 5px;
+    background: #f5f5f5;
+    cursor: move;
+    user-select: none; /* Prevents text selection while dragging */
 }
 
 
