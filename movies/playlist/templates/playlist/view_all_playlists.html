@@ -25,6 +25,28 @@
             {% empty %}
             {% endfor %}
         </ul>
+
+        <div class="pagination">
+            <span class="step-links">
+                {% if playlists.has_previous %}
+                    <a href="?page=1">&laquo; First</a>
+                    <a href="?page={{ playlists.previous_page_number }}">Previous</a>
+                {% endif %}
+
+                <span class="current-page">
+                    Page {{ playlists.number }} of {{ playlists.paginator.num_pages }}
+                </span>
+
+                {% if playlists.has_next %}
+                    <a href="?page={{ playlists.next_page_number }}">Next</a>
+                    <a href="?page={{ playlists.paginator.num_pages }}">Last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+
+
+
+
     {% else %}
         <p>You have no Playlists.</p>
     {% endif %}
@@ -35,3 +57,5 @@
 
 
 {% endblock %}
+
+

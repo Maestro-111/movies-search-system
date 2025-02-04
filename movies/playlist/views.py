@@ -62,9 +62,15 @@ def create_playlist(request):
 
 @login_required
 def view_playlists(request):
-    playlists = Playlist.objects.filter(user=request.user)
 
-    context = {"playlists": playlists}
+    playlists = Playlist.objects.filter(user=request.user)
+    paginator = Paginator(playlists, 10)
+
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+    context = {"playlists": page_obj}
+
     return render(request, "playlist/view_all_playlists.html", context)
 
 
@@ -327,7 +333,7 @@ def get_recommendation_for_playlist(request, playlist_id):
 
 
 @login_required
-def get_my_recommendations(request):
+def get_recommendation_for_all_playlists(request):
 
     """
     get recommendations for a user for based on all playlists

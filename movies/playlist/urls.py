@@ -26,9 +26,9 @@ urlpatterns = [
         name="delete_playlist",
     ),
     path(
-        "get_my_recommendations/",
-        views.get_my_recommendations,
-        name="get_my_recommendations",
+        "get_recommendation_for_all_playlists/",
+        views.get_recommendation_for_all_playlists,
+        name="get_recommendation_for_all_playlists",
     ),
     path(
         "get_recommendation_for_playlist/<int:playlist_id>/",

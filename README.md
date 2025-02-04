@@ -43,7 +43,7 @@ PostgresSQL is used to store it.
 
 ### Recommendations
 
-1) Our system produces content based recommendations. It means it will recommend movies only based on the choice of previosuly selected movies.
+1) Our system produces content based recommendations. It means it will recommend movies only based on the choice of previously selected movies.
 2) We use a combination of cosine similarity and XGB ranker.
    1) For each movie we use cosine similarity to look for k closes movies.
    2) Then, for each closest, if user is logged in, we use trained XGB ranker to rank movies based on the user ratings
@@ -130,5 +130,6 @@ python generate_image_embeddings.py
 2. front-end (cont)
 3. Fix .dockerignore issue (e.g. not ignoring sqlite files)
 4. Continue updating friends section within users. Final goal is to have more info for recommendations
-5. Imporve the ranker
-6. Fix Prod.sh 
+5. Improve the ranker
+6. Update docker (dev/prod)
+7. Ngnix + Gunicorn issue (memory leakage)
