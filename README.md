@@ -133,3 +133,4 @@ python generate_image_embeddings.py
 5. Improve the ranker
 6. Update docker (dev/prod)
 7. Ngnix + Gunicorn issue (memory leakage)
+8. add paginator for chatbot

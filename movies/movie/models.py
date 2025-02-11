@@ -82,8 +82,10 @@ class Actors(models.Model):
 
 
 class MovieActor(models.Model):
+
     movie = models.ForeignKey("Movie", on_delete=models.CASCADE)
     actor = models.ForeignKey("Actors", on_delete=models.CASCADE)
+
     character_name = models.CharField(max_length=512, null=True, blank=True)
 
     class Meta:

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Movie, MovieMetaData, Rating, MovieActor
+from .models import Movie, MovieMetaData, Rating, MovieActor, MovieGenres
 
 from django.db.models import Q
 from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector, TrigramSimilarity
@@ -31,9 +31,78 @@ from config.logger_config import system_logger
 from langdetect import detect
 import json
 
+from collections import defaultdict
+import spacy
+
+from embeddings.train_spacy import MODEL_PATH
+
+
 # Ignore all warnings
 warnings.filterwarnings("ignore")
 model = SentenceTransformer("all-MiniLM-L6-v2")
+
+try:
+    nlp = spacy.load(MODEL_PATH)
+    print("Loaded trained movie model successfully!")
+except Exception as e:
+    print(e)
+    print("Couldn't load trained model - please run training script first")
+    nlp = None
+
+
+# def extract_query_filters(query: str):
+#     try:
+#         nlp = spacy.load("embeddings/trained_movie_model")
+#         print("Loaded trained movie model successfully!")
+#     except:
+#         print("Couldn't load trained model - please run training script first")
+#         nlp = None
+#
+#     filters = defaultdict(list)
+#
+#     year_match = re.search(r'\b(19|20)\d{2}\b', query)
+#
+#     if year_match:
+#         filters['year'] = [int(year_match.group())]
+#
+#     actor_names = set(MovieActor.objects.values_list('actor__actor_name', flat=True).distinct())
+#
+#     for actor_name in actor_names:
+#         if actor_name and actor_name.lower() in query.lower():
+#             filters['actor'].append(actor_name)
+#
+#     genres = set(MovieGenres.objects.values_list('genre', flat=True))
+#
+#     for genre in genres:
+#         if genre.lower() in query.lower():
+#             filters['genre'].append(genre)
+#
+#     return filters
+
+def extract_query_filters(query: str):
+
+    if nlp is None:
+        return defaultdict(list)
+
+    doc = nlp(query)
+    filters = defaultdict(list)
+
+    for ent in doc.ents:
+        if ent.label_ == "DATE":
+            try:
+                year = int(ent.text)
+                if year < 100:
+                    year += 2000 if year < 50 else 1900
+                filters['year'].append(year)
+            except ValueError:
+                pass
+        elif ent.label_ == "GENRE":
+            filters['genre'].append(ent.text)
+        elif ent.label_ == "ACTOR":
+            filters['actor'].append(ent.text)
+
+    print(filters)
+    return filters
 
 
 @csrf_exempt
@@ -45,21 +114,61 @@ def chat_bot_request(request):
     """
 
     if request.method == "POST":
-        user_message = request.POST.get("chat_bot_request", "")
-        user_embedding = model.encode(user_message).tolist()
 
+        user_message = request.POST.get("chat_bot_request", "")
+
+        filters = extract_query_filters(user_message)
+
+        queryset = Movie.objects.all()
+
+        if 'year' in filters:
+
+            year_q = Q()
+
+            for year in filters['year']:
+                year_q |= Q(year=year)
+
+            queryset = queryset.filter(year_q)
+
+        if 'actor' in filters:
+
+            actor_q = Q()
+            for actor in filters['actor']:
+                actor_q |= Q(movieactor__actor__actor_name__iexact=actor)
+            queryset = queryset.filter(actor_q)
+
+        if 'genre' in filters:
+
+            genre_q = Q()
+            for genre in filters['genre']:
+                genre_q |= Q(genres__genre__iexact=genre)
+            queryset = queryset.filter(genre_q)
+
+        queryset = queryset.distinct()
+        filtered_movie_ids = set(queryset.values_list('movie_id', flat=True))
+
+        user_embedding = model.encode(user_message).tolist()
         movies_collection = chroma_client.get_collection("movies_embeddings")
 
         results = movies_collection.query(
             query_embeddings=[user_embedding],
-            n_results=10,
+            n_results=20000,
         )
 
         movie_ids = results["ids"][0]
-        movies = [Movie.objects.get(movie_id=cur_id) for cur_id in movie_ids]
+        distances = results["distances"][0]
 
-        print(movie_ids)
-        print(movies)
+        final_movie_ids = set()
+
+        for movie_id, distance in zip(movie_ids, distances):
+
+            movie_id = int(movie_id)
+
+            if movie_id in filtered_movie_ids and (movie_id, distance) not in final_movie_ids:
+                final_movie_ids.add((movie_id,distance))
+
+        final_movie_ids = sorted(final_movie_ids, key = lambda x : x[1])[:20]
+        movies = [Movie.objects.get(movie_id=cur_id) for cur_id,_ in final_movie_ids]
 
         system_logger.info(f"Best matches for the {user_message} : {[movie.original_title for movie in movies]}")
 
