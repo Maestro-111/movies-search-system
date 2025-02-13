@@ -1,8 +1,8 @@
 services:
   web:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: docker/local/Dockerfile
     ports:
       - "8000:8000"
     depends_on:
@@ -10,14 +10,14 @@ services:
       - redis
     environment:
       - DEBUG=True
-      - DJANGO_SETTINGS_MODULE=movies.settings
+      - DJANGO_SETTINGS_MODULE=movies.settings.local
     command:
       - web
 
   celery_worker:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: docker/local/Dockerfile
     command: celery_worker
     depends_on:
       - web
@@ -25,13 +25,13 @@ services:
       - db
     environment:
       - DEBUG=True
-      - DJANGO_SETTINGS_MODULE=movies.settings
+      - DJANGO_SETTINGS_MODULE=movies.settings.local
 
 
   celery_beat:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: docker/local/Dockerfile
     command: celery_beat
     depends_on:
       - web
@@ -39,7 +39,7 @@ services:
       - db
     environment:
       - DEBUG=True
-      - DJANGO_SETTINGS_MODULE=movies.settings
+      - DJANGO_SETTINGS_MODULE=movies.settings.local
 
   db:
     image: postgres:15

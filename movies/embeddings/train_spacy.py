@@ -48,9 +48,9 @@ def train_and_save_spacy_model():
     ])
 
     ruler.add_patterns(patterns)
-    nlp.to_disk("spacy_model")
+    nlp.to_disk(MODEL_PATH)
 
-    print("Model saved successfully!")
+    print(f"Model saved successfully to {MODEL_PATH}!")
 
 
 if __name__ == "__main__":

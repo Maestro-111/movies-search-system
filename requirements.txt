@@ -15,7 +15,6 @@ bcrypt==4.2.0
 beautifulsoup4==4.12.3
 billiard==4.2.1
 bleach==6.2.0
-blis==1.2.0
 build==1.2.2.post1
 cachetools==5.5.0
 catalogue==2.0.10
@@ -30,7 +29,7 @@ click==8.1.7
 click-didyoumean==0.3.1
 click-plugins==1.1.1
 click-repl==0.3.0
-cloudpathlib==0.20.0
+cloudpathlib==0.16.0
 colorama==0.4.6
 coloredlogs==15.0.1
 colorlog==6.9.0
@@ -199,12 +198,9 @@ setuptools==75.8.0
 shellingham==1.5.4
 six==1.16.0
 sklearn-compat==0.1.3
-smart-open==7.0.4
+smart-open==6.4.0
 sniffio==1.3.1
 soupsieve==2.6
-spacy==3.8.4
-spacy-legacy==3.0.12
-spacy-loggers==1.0.5
 sqlparse==0.5.0
 srsly==2.5.1
 stack-data==0.6.3
@@ -212,7 +208,6 @@ starlette==0.41.2
 sympy==1.13.1
 tenacity==9.0.0
 terminado==0.18.1
-thinc==8.3.4
 threadpoolctl==3.5.0
 tinycss2==1.4.0
 tokenizers==0.20.3
@@ -222,7 +217,7 @@ tornado==6.4.2
 tqdm==4.66.4
 traitlets==5.14.3
 transformers==4.46.2
-typer==0.13.0
+typer==0.9.4
 types-python-dateutil==2.9.0.20241003
 typing_extensions==4.12.2
 tzdata==2024.1
@@ -235,7 +230,7 @@ virtualenv==20.28.0
 wasabi==1.1.3
 watchfiles==0.24.0
 wcwidth==0.2.13
-weasel==0.4.1
+weasel==0.3.4
 webcolors==24.11.1
 webencodings==0.5.1
 websocket-client==1.8.0

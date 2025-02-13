@@ -32,22 +32,24 @@ from langdetect import detect
 import json
 
 from collections import defaultdict
-import spacy
 
-from embeddings.train_spacy import MODEL_PATH
+# import spacy
+# from embeddings.train_spacy import MODEL_PATH
 
 
 # Ignore all warnings
 warnings.filterwarnings("ignore")
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-try:
-    nlp = spacy.load(MODEL_PATH)
-    print("Loaded trained movie model successfully!")
-except Exception as e:
-    print(e)
-    print("Couldn't load trained model - please run training script first")
-    nlp = None
+# try:
+#     nlp = spacy.load(MODEL_PATH)
+#     print("Loaded trained movie model successfully!")
+# except Exception as e:
+#     print(e)
+#     print("Couldn't load trained model - please run training script first")
+#     nlp = None
+
+nlp = None
 
 
 # def extract_query_filters(query: str):
