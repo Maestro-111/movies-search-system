@@ -89,48 +89,32 @@ cd movies-search-system
 
 ## Docker Set up
 
-It's convenient to use docker to  get all packages/dependencies set up together.
+It's convenient to use docker to  get all packages/dependencies set up together. We use Makefile to contain all docker commands.
 
-1) Create a docker compose:
-
-```
-docker compose build
-docker compose up
-```
-
-2) Run migrations within web container
+1) For local development (deploys django with runserver) you can use
 
 ```
-cd movies
-python manage.py makemigrations
-python manage.py migrate
+make local build
+make local up
 ```
 
-3) Populate PostgresSQL (this will take a while...)
+2) For prod development (deploys django ngnix + gunicorn) you can use
 
 ```
-cd ..
-cd populate_databse
-python main.py
-
+make prod build
+make prod up
 ```
 
-4) Create Embeddings for both images/text data
-
-```
-cd ..
-python generate_text_embeddings.py
-python generate_image_embeddings.py
-```
+##### Important: when running make commands make sure you are in the project root directory (movies-search-system)!
 
 
 ## TO DO
 
 1. Updating Forum Section.
+2. 
 2. front-end (cont)
 3. Fix .dockerignore issue (e.g. not ignoring sqlite files)
 4. Continue updating friends section within users. Final goal is to have more info for recommendations
 5. Improve the ranker
-6. Update docker (dev/prod)
-7. Ngnix + Gunicorn issue (memory leakage)
-8. add paginator for chatbot
+6. Ngnix + Gunicorn issue (memory leakage)
+7. add paginator for chatbot

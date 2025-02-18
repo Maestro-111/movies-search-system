@@ -33,78 +33,21 @@ import json
 
 from collections import defaultdict
 
-# import spacy
-# from embeddings.train_spacy import MODEL_PATH
-
 
 # Ignore all warnings
 warnings.filterwarnings("ignore")
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# try:
-#     nlp = spacy.load(MODEL_PATH)
-#     print("Loaded trained movie model successfully!")
-# except Exception as e:
-#     print(e)
-#     print("Couldn't load trained model - please run training script first")
-#     nlp = None
 
 nlp = None
 
-
-# def extract_query_filters(query: str):
-#     try:
-#         nlp = spacy.load("embeddings/trained_movie_model")
-#         print("Loaded trained movie model successfully!")
-#     except:
-#         print("Couldn't load trained model - please run training script first")
-#         nlp = None
-#
-#     filters = defaultdict(list)
-#
-#     year_match = re.search(r'\b(19|20)\d{2}\b', query)
-#
-#     if year_match:
-#         filters['year'] = [int(year_match.group())]
-#
-#     actor_names = set(MovieActor.objects.values_list('actor__actor_name', flat=True).distinct())
-#
-#     for actor_name in actor_names:
-#         if actor_name and actor_name.lower() in query.lower():
-#             filters['actor'].append(actor_name)
-#
-#     genres = set(MovieGenres.objects.values_list('genre', flat=True))
-#
-#     for genre in genres:
-#         if genre.lower() in query.lower():
-#             filters['genre'].append(genre)
-#
-#     return filters
-
 def extract_query_filters(query: str):
+    """
+    Empty for now. Idea is to filter movies by info from query, e.g. by year, genre etc
+    """
+    return defaultdict(list)
 
-    if nlp is None:
-        return defaultdict(list)
 
-    doc = nlp(query)
-    filters = defaultdict(list)
-
-    for ent in doc.ents:
-        if ent.label_ == "DATE":
-            try:
-                year = int(ent.text)
-                if year < 100:
-                    year += 2000 if year < 50 else 1900
-                filters['year'].append(year)
-            except ValueError:
-                pass
-        elif ent.label_ == "GENRE":
-            filters['genre'].append(ent.text)
-        elif ent.label_ == "ACTOR":
-            filters['actor'].append(ent.text)
-
-    print(filters)
-    return filters
 
 
 @csrf_exempt
@@ -118,7 +61,6 @@ def chat_bot_request(request):
     if request.method == "POST":
 
         user_message = request.POST.get("chat_bot_request", "")
-
         filters = extract_query_filters(user_message)
 
         queryset = Movie.objects.all()
@@ -172,11 +114,25 @@ def chat_bot_request(request):
         final_movie_ids = sorted(final_movie_ids, key = lambda x : x[1])[:20]
         movies = [Movie.objects.get(movie_id=cur_id) for cur_id,_ in final_movie_ids]
 
+        request.session["movie_ids"] = [movie.movie_id for movie in movies]
         system_logger.info(f"Best matches for the {user_message} : {[movie.original_title for movie in movies]}")
 
-        return render(request, "movie/search_movie.html", {"movies": movies})
+    if request.method == "GET":
 
-    return render(request, "movie/search_movie.html")
+        if "movie_ids" in request.session:
+            movie_ids = request.session["movie_ids"]
+            movies = [Movie.objects.get(movie_id=movie_id) for movie_id in movie_ids]
+        else:
+            movies = []
+
+    paginator = Paginator(movies, 10)
+    page_number = request.GET.get("page")
+
+    page_obj = paginator.get_page(page_number)
+    context = {"movies": page_obj}
+
+
+    return render(request, "movie/search_movie.html", context=context)
 
 
 def enter_query(request):
