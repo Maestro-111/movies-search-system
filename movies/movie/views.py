@@ -143,7 +143,7 @@ def enter_query(request):
     return render(request, "movie/search_movie.html")
 
 
-def movie_search(request):
+def search_movie(request):
     """
     Find the best matches for the query.
 

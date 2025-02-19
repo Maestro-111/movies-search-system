@@ -12,20 +12,23 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "batisteo.vscode-django",
-        "ms-azuretools.vscode-docker",
-        "redhat.vscode-yaml",
-        "ms-python.black-formatter"
-      ],
-      "settings": {
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
-        "python.linting.enabled": true,
-        "python.linting.pylintEnabled": true,
-        "python.formatting.provider": "black",
-        "editor.formatOnSave": true
-      }
+        "ms-azuretools.vscode-docker"
+      ]
     }
   },
 
-  "forwardPorts": [8000, 6379],
-  "remoteUser": "vscode"
+  "remoteUser": "vscode",
+
+  // Mount host Docker socket
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ],
+
+  // Install Docker CLI and Make
+  "postCreateCommand": "apt-get update && apt-get install -y docker.io make",
+
+  "runArgs": [
+    "--env-file",
+    "../.env"
+  ]
 }

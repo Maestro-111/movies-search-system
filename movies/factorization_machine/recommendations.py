@@ -42,7 +42,12 @@ def produce_recommendations_1(cur_row_metadata_values, metadata_rows):
 def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings, metadata_name, alpha=0.95, user=None):
 
     """
-    Produce movie recommendations using cosine similarity and user ratings.
+    Produce a scalar value based on cosine sim between selected movie and all movies data
+    for narrow the ranking space for XGB ranker afterwards,
+    e.g. we filter space by sorting with cosine sim and select top k for further ranking
+
+    then use XGB ranker to give a ranking score and fectch top 10
+
     :param cur_row_metadata_values: Array of current movie features.
     :param metadata_rows: List of tuples (movie_id, movie_features_array).
     :param user_ratings: Dictionary of movie_id to user rating.
@@ -142,9 +147,12 @@ def produce_recommendations(cur_row_metadata_values, metadata_rows, user_ratings
         sorted_movies = sorted(movie_rankings, key=lambda x: x[1], reverse=True)
         recommended_ids = [movie_id for movie_id, _ in sorted_movies[:10]]
 
-        print(sorted_movies)
-
     else:
+
+        """
+        no user - no ranking
+        """
+
         system_logger.info(f"skipping ranking, no user")
         recommended_ids = [movie_id for movie_id, _, _ in combined_scores[:10]]
 
