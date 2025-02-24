@@ -2,9 +2,18 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("", views.playlist_menu, name="playlist_menu"),
-    path("create_playlist/", views.create_playlist, name="create_playlist"),
-    path("view_playlists/", views.view_playlists, name="view_playlists"),
+    path("",
+         views.playlist_menu,
+         name="playlist_menu"),
+
+    path("create_playlist/",
+         views.create_playlist,
+         name="create_playlist"),
+
+    path("view_playlists/",
+         views.view_playlists,
+         name="view_playlists"),
+
     path(
         "view_playlist/<int:playlist_id>/",
         views.view_single_playlist,

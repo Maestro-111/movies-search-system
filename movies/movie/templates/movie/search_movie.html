@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{% static 'movie/css/styles.css' %}">
 
 <div class="search-container">
-    <form method="POST" action="{% url 'movie_search' %}" enctype="multipart/form-data">
+    <form method="POST" action="{% url 'search_movie' %}" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-row">
             <!-- Search Input -->

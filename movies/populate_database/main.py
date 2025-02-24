@@ -6,7 +6,6 @@ from populate_movie_languages import PopulateMovieLanguages
 from populate_movie_genres import PopulateMovieGenres
 from populate_actors import PopulateActors
 from populate_movies_actors import PopulateMovieActors
-from populate_user_profile import PopulateUserProfile
 
 if __name__ == "__main__":
     genres = PopulateGenres()

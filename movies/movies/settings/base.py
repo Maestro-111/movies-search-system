@@ -70,7 +70,8 @@ INSTALLED_APPS = [
     "forum.apps.ForumConfig",
     "factorization_machine.apps.FactorizationMachineConfig",
     "debug_toolbar",
-    'django_celery_beat'
+    'django_celery_beat',
+    'django_elasticsearch_dsl',
 ]
 
 MIDDLEWARE = [

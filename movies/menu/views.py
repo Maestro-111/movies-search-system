@@ -8,7 +8,7 @@ def main_menu(request):
 
 
 def start_search(request):
-    movie_search_url = reverse("movie_search")
+    movie_search_url = reverse("search_movie")
 
     return redirect(movie_search_url)
 

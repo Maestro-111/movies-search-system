@@ -13,4 +13,6 @@ class PopulateMixin:
         self.db_port = os.getenv("db_port")
 
         if excel_name is not None:
-            self.df_path = self.BASE_DIR / "movies" / "data" / f"{excel_name}.xlsx"
+            # self.df_path = self.BASE_DIR / "movies" / "data" / f"{excel_name}.xlsx"
+
+            self.df_path = self.BASE_DIR / "data" / f"{excel_name}.xlsx"

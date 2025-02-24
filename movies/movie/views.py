@@ -96,7 +96,7 @@ def chat_bot_request(request):
 
         results = movies_collection.query(
             query_embeddings=[user_embedding],
-            n_results=20000,
+            n_results=10,
         )
 
         movie_ids = results["ids"][0]

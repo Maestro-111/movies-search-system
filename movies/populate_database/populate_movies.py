@@ -21,8 +21,15 @@ class PopulateMovies(PopulateMixin):
 
         df = pd.read_excel(self.df_path, index_col=0)
 
-        with open(os.path.join(self.base_dir, "movies/data/posters.csv"), encoding="utf-8", errors="replace") as f:
+        print(self.base_dir)
+
+        with open(os.path.join(self.base_dir, "data/posters.csv"), encoding="utf-8", errors="replace") as f:
             urls_df = pd.read_csv(f)
+
+
+
+        # with open(os.path.join(self.base_dir, "/data/posters.csv"), encoding="utf-8", errors="replace") as f:
+        #     urls_df = pd.read_csv(f)
 
         cursor = conn.cursor()
 

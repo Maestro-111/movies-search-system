@@ -111,10 +111,11 @@ make prod up
 ## TO DO
 
 1. Updating Forum Section.
-2. 
 2. front-end (cont)
 3. Fix .dockerignore issue (e.g. not ignoring sqlite files)
 4. Continue updating friends section within users. Final goal is to have more info for recommendations
 5. Improve the ranker
 6. Ngnix + Gunicorn issue (memory leakage)
 7. add paginator for chatbot
+8. Configure set up for docker (nltk + populate data + embeddings)
+9. weird gitignore config (fix!)

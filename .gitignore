@@ -17,3 +17,4 @@ passwords.txt
 LDA/perplexity_plot.png
 *.rdb
 /movies/collected_static/
+docker/local/.env
