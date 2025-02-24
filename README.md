@@ -35,7 +35,7 @@ PostgresSQL is used to store it.
 1) We use PostgresSQL to store the data
 2) Users have 3 ways to search for a movie.
 
-   1) By title. System will use PostgresSQL full text search to look for the best match based on a title.
+   1) By title. System will use Elastic full text search + fuzzy to look for the best match based on a title.
    2) In a natural language by using custom chat box. For that we store text embeddings of each movie in ChromaDB client.
    3) By movie poster. For that we store image embeddings of each movie poster in ChromaDB client.
 
@@ -68,12 +68,16 @@ PostgresSQL is used to store it.
 
 <img width="1300" alt="teaser" src="./figure/topics.png">
 
-### Celery (integrating...)
+### Celery 
 
 1) Recommendation computation is quite time-consuming. We use celery to schedule a background task that re-trains XGB and computes recommendations for each user
 2) We store recommendations in Reddis. Then, when user wants to see their recommendations, we just retrieve info from Reddis.
 3) LDA training/output procedure should also be configured for Celery worker.
 
+
+### Elastic Search (integrating...)
+
+1) Used to search by title.
 
 
 ## Project Set Up
@@ -87,7 +91,7 @@ cd movies-search-system
 
 
 
-## Docker Set up
+## Docker Set up (not development just starts the project)
 
 It's convenient to use docker to  get all packages/dependencies set up together. We use Makefile to contain all docker commands.
 
@@ -104,6 +108,10 @@ make local up
 make prod build
 make prod up
 ```
+
+## Develop inside devcontainer environment 
+
+For now the only way to run/debug code for this branch is with devcontainer. It will use local settings (regular runserver).
 
 ##### Important: when running make commands make sure you are in the project root directory (movies-search-system)!
 

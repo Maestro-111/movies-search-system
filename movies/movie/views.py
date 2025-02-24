@@ -10,6 +10,9 @@ from sentence_transformers import SentenceTransformer
 from factorization_machine.recommendations import produce_recommendations
 from factorization_machine.recommendations import get_combined_features
 
+from elasticsearch_dsl import Q as ESQ
+from .documents import MovieDocument
+
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from gensim.models import Word2Vec
@@ -163,6 +166,7 @@ def search_movie(request):
     else:
 
         if query:
+
             relative_path = "movies/config/languages.json"
             file_path = os.path.join(settings.BASE_DIR, relative_path)
 
@@ -177,18 +181,32 @@ def search_movie(request):
 
             pg_config = language_config.get(language, "english")
 
-            search_query = SearchQuery(query, config=pg_config)
-            search_vector = SearchVector("original_title", config=pg_config, weight="A")
-
-            movies = (
-                Movie.objects.annotate(rank=SearchRank(search_vector, search_query), similarity=TrigramSimilarity("original_title", query))  # Trigram similarity for typo tolerance
-                .filter(Q(rank__gte=0.1) | Q(similarity__gte=0.3))
-                .order_by("-rank", "-similarity")
+            es_search = MovieDocument.search().query(
+                ESQ(
+                    'multi_match',
+                    query=query,
+                    fields=[
+                        'original_title',
+                    ],
+                    type='best_fields',
+                    fuzziness='AUTO',
+                    prefix_length=1,
+                    max_expansions=50
+                )
             )
 
-            movies = list(movies[:20])
-            system_logger.info(f"best mathces for {query} are ': {[movie.original_title for movie in movies]}")
+            # Execute search
+            response = es_search.execute()
+            movie_ids = [hit.meta.id for hit in response]
 
+            print(movie_ids[:20])
+
+            id_to_pos = {id: pos for pos, id in enumerate(movie_ids)}
+            movies = list(Movie.objects.filter(movie_id__in=movie_ids))
+            movies.sort(key=lambda movie: id_to_pos.get(str(movie.movie_id), 999))
+
+            movies = movies[:20]
+            system_logger.info(f"best matches for {query} are: {[movie.original_title for movie in movies]}")
             request.session["movie_ids"] = [movie.movie_id for movie in movies]
 
         if image:

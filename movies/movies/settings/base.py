@@ -21,6 +21,7 @@ load_dotenv(find_dotenv())
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
+
 features = os.path.join(BASE_DIR, "movies/config/features.json")
 
 with open(features, "r") as json_file:
